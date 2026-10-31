@@ -76,7 +76,7 @@ Planes y menús verificados en octubre de 2026 en [support.claude.com](https://s
 
 ### En Claude (claude.ai o la app)
 
-1. Descarga `planificador-proyectos-web.zip` desde la página de [Releases](../../releases) de este repositorio. Si no hay ninguna, descarga el repositorio y comprime la carpeta `skills/planificador-proyectos-web/` completa (la carpeta en sí, no solo los archivos que tiene dentro).
+1. Descarga [`planificador-proyectos-web.zip`](https://github.com/ffelipecuevasc/planificador-proyectos-web/releases/latest/download/planificador-proyectos-web.zip), que corresponde siempre a la última versión publicada en [Releases](https://github.com/ffelipecuevasc/planificador-proyectos-web/releases). Si no hay ninguna, descarga el repositorio y comprime la carpeta `skills/planificador-proyectos-web/` completa (la carpeta en sí, no solo los archivos que tiene dentro).
 2. En Claude, ve a *Customize → Skills*.
 3. Pulsa **+**, luego *Create skill* y *Upload a skill*.
 4. Sube el `.zip`.
@@ -92,7 +92,7 @@ Tienes tres opciones:
 En macOS o Linux, desde la terminal:
 
 ```bash
-git clone https://github.com/<usuario>/planificador-proyectos-web.git
+git clone https://github.com/ffelipecuevasc/planificador-proyectos-web.git
 mkdir -p ~/.claude/skills
 cp -r planificador-proyectos-web/skills/planificador-proyectos-web ~/.claude/skills/
 ```
@@ -100,7 +100,7 @@ cp -r planificador-proyectos-web/skills/planificador-proyectos-web ~/.claude/ski
 En Windows, desde PowerShell:
 
 ```powershell
-git clone https://github.com/<usuario>/planificador-proyectos-web.git
+git clone https://github.com/ffelipecuevasc/planificador-proyectos-web.git
 New-Item -ItemType Directory -Force "$HOME\.claude\skills"
 Copy-Item -Recurse planificador-proyectos-web\skills\planificador-proyectos-web "$HOME\.claude\skills\"
 ```
@@ -204,7 +204,7 @@ Las demás pruebas (unitarias, E2E, cobertura, contract testing; ver el [glosari
     └── 99_bitacora/              Qué se hizo, cómo se comprobó y qué se aprendió
 ```
 
-Los documentos son de dos tipos, con reglas distintas:
+Los documentos son de dos tipos, con reglas distintas. En los archivos internos de la skill y en los mensajes del validador, los protegidos aparecen con el nombre técnico de *inmutables*.
 
 | Tipo | Archivos | Quién los edita | Regla |
 | :--- | :------- | :-------------- | :---- |
@@ -229,9 +229,10 @@ El segundo se puede comprobar con un sí o un no. El primero no, y el validador 
 
 1. Descomprime el `.zip` en la carpeta principal de tu proyecto (o deja que Claude Code escriba los archivos) y haz el primer commit con el mensaje que te sugirió la skill.
 2. Abre `_planificacion/00_producto/registro-pendientes.md` y revisa los datos marcados como `PENDIENTE_CLIENTE` (información que debe dar quien encarga el proyecto; si el proyecto es tuyo, eres tú) y `PENDIENTE_DESARROLLADOR` (decisiones técnicas que te tocan a ti). Resuelve los que bloquean la primera etapa.
-3. Si la etapa incluye una especificación, léela. Si estás de acuerdo, cambia su estado de `Borrador` a `Aprobada` dentro del mismo archivo. El agente no programa nada que siga en `Borrador`.
-4. Pídele al agente: «Ejecuta la iteración activa». La iteración activa es la que figura como tal en `registro-pendientes.md`. El agente leerá el registro, la etapa y su especificación, programará, comprobará el resultado, escribirá la bitácora y dejará la etapa `En revisión`, con un mensaje de commit sugerido.
-5. Revisa lo que hizo, haz tú el commit y marca la etapa como `Terminada`.
+3. Si la etapa incluye una especificación, léela. Si estás de acuerdo, cambia el campo **Estado**, al inicio del archivo, de `Borrador` a `Aprobada`. El agente no programa nada que siga en `Borrador`.
+4. En `registro-pendientes.md`, marca la iteración como `En curso` (o pídele al agente que lo haga). Su nombre aparece en el campo **Iteración activa** al inicio de ese archivo.
+5. Pídele al agente: «Ejecuta la iteración activa». El agente leerá el registro, la etapa y su especificación, programará, comprobará el resultado, escribirá la bitácora y dejará la etapa `En revisión`, con un mensaje de commit sugerido.
+6. Revisa lo que hizo, haz tú el commit y marca la etapa como `Terminada`.
 
 > ◆ **El agente nunca hace commits, push, merges ni despliegues.** Los permisos de `.claude/settings.json` se lo impiden, y `AGENTS.md` le explica por qué. Esos pasos siempre quedan en tus manos.
 
@@ -253,13 +254,13 @@ En Windows, usa `python` o `py` en lugar de `python3`.
 | :----- | :--------------- | :------------ |
 | Carpeta del proyecto | La ruta a tu proyecto, como `../mi-cv` | Sí |
 | `--tipo` | `frontend`, `backend` o `fullstack` | Sí |
-| `--nivel` | `pequeno`, `mediano` o `complejo` (sin tilde) | Sí |
+| `--nivel` | `pequeno`, `mediano` o `complejo` (sin tilde) | No. Si no lo indicas, usa `mediano` |
 | `--api-rest` | Se agrega sin valor si el proyecto expone una API REST | No |
 | `--zip` | Nombre de un archivo, como `salida.zip`, para empaquetar el resultado | No |
 
 El validador entrega dos tipos de resultados:
 
-- **Errores**, que impiden la entrega hasta que se corrijan: faltan archivos que el nivel exige; hay nombres con tildes o que no siguen la convención; `settings.json` está mal escrito o tiene reglas que se contradicen; quedaron partes de la plantilla sin completar; el `README.md` del proyecto incluye bloques de código (ese archivo es una presentación, no un manual técnico); el registro no tiene lista de pendientes; hay etapas o especificaciones sin criterios de aceptación; una API REST de nivel mediano o complejo no tiene contrato; o hay datos pendientes que no quedaron registrados.
+- **Errores**, que impiden la entrega hasta que se corrijan: faltan archivos que el nivel exige; hay nombres con tildes o que no siguen la convención; `settings.json` está mal escrito o tiene reglas que se contradicen; quedaron partes de la plantilla sin completar; el `README.md` del proyecto incluye bloques de código o comandos (ese archivo es una presentación, no un manual técnico; solo se admite un bloque `text` para el árbol de carpetas); el registro no tiene lista de pendientes; hay etapas o especificaciones sin criterios de aceptación; una API REST de nivel mediano o complejo no tiene contrato; o hay datos pendientes que no quedaron registrados.
 - **Avisos**, para que los revises uno por uno: fechas o referencias al pasado en los documentos protegidos, y criterios de aceptación vagos como «se ve bien» o «funciona correctamente».
 
 ---
