@@ -46,6 +46,8 @@ Documentos vivos que describen el producto completo.
 
 Una subcarpeta por épica, con nombre descriptivo en ASCII (`epica-01-fundacion/`). Cada una contiene su definición, sus iteraciones y, solo si fue necesario, los archivos de evidencia de producción.
 
+Si el proyecto ya tenía código cuando se adoptó esta documentación, existe `epica-00-linea-base/`: describe lo que ya estaba construido, está `Terminada` y no lleva iteraciones ni bitácoras. No se modifica; sirve de punto de partida para el backlog y la primera auditoría.
+
 ### 2.3 `99_bitacora/`
 
 Una subcarpeta por épica, con el mismo nombre que la carpeta de la épica en `10_epicas/`. Dentro, las bitácoras de sus iteraciones.
@@ -67,6 +69,8 @@ El contrato técnico de la API REST: endpoints, métodos, parámetros, modelos d
 - **Numeración:** épicas `01`–`99`; iteraciones `XX-YY`, donde `XX` es la épica e `YY` el correlativo.
 - **Nombres de archivo y carpeta:** minúsculas, guiones y solo caracteres ASCII, sin tildes ni ñ (`epica-02-sistema-diseno/`). El contenido sí lleva tildes y ñ.
 - **Iteraciones:** `iteracion-XX-YY-descripcion-corta.md`.
+- **Tamaño máximo de una iteración:** un solo objetivo, un resultado que el desarrollador revisa en unos 30 minutos y **8 tareas como máximo**. Una iteración que se pasa se parte en dos o más antes de empezar, cada una con su propio objetivo y sus criterios.
+- **Detalle de las iteraciones:** al arrancar el proyecto se escriben en detalle solo las iteraciones de la primera épica; las de las demás épicas quedan nombradas en la tabla de su definición. Las iteraciones de cada épica siguiente se generan todas juntas al cerrar la anterior (sección 4.4).
 - **Especificaciones:** `spec-nombre-de-la-funcionalidad.md`. Criterios de aceptación con ID corto (`CA-01`), que las iteraciones citan.
 - **Bitácoras:** `bitacora-XX-YY.md` para la primera de la iteración; las siguientes llevan un sufijo descriptivo (`bitacora-XX-YY-correccion.md`, `bitacora-XX-YY-produccion.md`) y, si el sufijo se repite, un número (`bitacora-XX-YY-ajustes-2.md`). La fecha va dentro del archivo, no en el nombre.
 - **Estados de trabajo:** `Pendiente`, `En curso`, `Bloqueada`, `En revisión`, `Terminada`, `Descartada`.
@@ -85,12 +89,13 @@ Una iteración es una unidad de trabajo que se puede revisar de una vez: una ses
 
 1. El desarrollador marca la iteración como `En curso` en `registro-pendientes.md` (o pide al agente que lo haga).
 2. El agente lee `AGENTS.md`, el registro, la iteración, su especificación, el contrato si toca la API y las RDA relacionadas.
-3. Si la iteración implementa una especificación en `Borrador`, el agente se detiene y avisa: no se implementa lo que no está aprobado.
+3. El agente comprueba la **definición de preparada** de `AGENTS.md`: objetivo claro, criterios verificables, especificación `Aprobada` si la tiene, dependencias terminadas, datos del cliente disponibles y tamaño dentro del máximo. Si algo falla, no empieza: avisa qué falta y propone cómo resolverlo (pedir la aprobación, registrar el dato pendiente, partir la iteración).
 4. El agente ejecuta **la iteración completa**: sigue el plan técnico y las tareas, implementa, verifica según la definición de terminado de `AGENTS.md`, incluso contra producción si tiene cómo, y escribe la bitácora con su revisión.
 5. Solo si no pudo obtener un dato de producción después de intentarlo por todos los medios, crea un archivo de evidencia (sección 5.4).
 6. El agente actualiza el registro (estado, backlog, historial) y, si corresponde, la especificación (a `Vigente` cuando se cumplen todos sus criterios), las RDA y las auditorías.
 7. El agente deja la iteración en `En revisión` y propone el mensaje de commit.
-8. El desarrollador revisa, hace commit y push, y marca la iteración como `Terminada`.
+8. Si es la última iteración de su épica, el agente sigue con el cierre de la épica y la propuesta de la siguiente (sección 4.4), en la misma entrega.
+9. El desarrollador revisa, hace commit y push, y marca la iteración como `Terminada`.
 
 ### 4.2 Una funcionalidad nueva
 
@@ -110,6 +115,20 @@ Una iteración es una unidad de trabajo que se puede revisar de una vez: una ses
    - **Ante la duda,** se pregunta antes de tocar el código.
 4. **Actualizar** solo los documentos afectados.
 5. **Implementar, verificar y registrar.** Una corrección que no pertenece a la iteración activa usa la rama `correccion/descripcion-corta` y el commit `Corrección: descripción`.
+
+### 4.4 Cierre de una épica y planificación de la siguiente
+
+Se activa en dos casos: como paso final de la última iteración de una épica, o cuando el desarrollador lo pide («planifica la siguiente épica», o el comando `/siguiente-epica` en Claude Code). Si la épica todavía tiene iteraciones sin terminar, el agente lo dice y no la cierra.
+
+1. **Revisión al cierre.** El agente completa esa sección en la definición de la épica que termina: si se cumplió el criterio de término, qué se aprendió y qué cambia en el backlog o en las épicas siguientes. Si cambia algo, lo aplica en el registro en la misma pasada. Si lo aprendido justifica cambiar un documento protegido, entrega la propuesta.
+2. **Lectura.** Lee la definición de la épica siguiente, el backlog, las especificaciones relacionadas y las RDA vigentes.
+3. **Propuesta.** Presenta en el chat las iteraciones de la épica siguiente: número, nombre y objetivo en una línea, elementos del backlog que cubre, y qué especificación o dato del cliente necesita cada una. Toda iteración respeta el tamaño máximo (sección 3); la que no cabe ya viene partida en la propuesta.
+4. **Iteraciones que ya existen.** Si la épica siguiente ya tiene iteraciones escritas en detalle, no se rehacen: el agente las revisa contra la revisión al cierre y propone ajustes solo si algo cambió. Si nada cambió, lo dice.
+5. **Aprobación.** El agente espera la aprobación del desarrollador. Si este ajusta la lista, el agente la corrige.
+6. **Generación.** Con la aprobación, el agente genera de una vez todos los archivos de iteración de la épica siguiente con la plantilla de la sección 6.1, y en la misma pasada actualiza la tabla de iteraciones de la definición de la épica, la tabla de estado y el backlog de `registro-pendientes.md` (iteración asignada a cada elemento) y una línea de historial.
+7. **Preparación.** El agente revisa cada iteración generada contra la definición de preparada de `AGENTS.md`. Lo que falta por causas externas (una especificación por aprobar, un dato del cliente) se registra en «Decisiones por tomar» o «Datos pendientes del cliente», y la iteración queda `Pendiente` hasta que se resuelva.
+
+Si no hay épica siguiente, el agente revisa el backlog: si quedan elementos comprometidos, propone una épica nueva con su definición; si no, lo dice para que el desarrollador cierre el proyecto o lo pase a mantenimiento.
 
 ## 5. Reglas de mantenimiento
 

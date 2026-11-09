@@ -53,6 +53,8 @@ Si es tu primera vez, sigue estos pasos y vuelve al resto del documento cuando t
 
    > Quiero crear mi CV online con portafolio: un sitio estático en HTML y CSS, publicado en GitHub Pages. Tiene secciones sobre mí, proyectos y contacto. Ayúdame a planificarlo.
 
+   Si tu proyecto ya tiene código, adjúntalo como `.zip` (o abre la skill en Claude Code dentro del repositorio): Claude deduce lo que hay antes de preguntarte.
+
 3. **Responde las preguntas.** Claude te hará preguntas cortas en bloques. Si no sabes alguna respuesta, dilo: quedará registrada como pendiente y no bloquea el resto.
 4. **Confirma el nivel.** Claude te propondrá un nivel de complejidad (pequeño, mediano o complejo) y te explicará por qué. Puedes aceptarlo o cambiarlo.
 5. **Descarga el resultado.** Recibirás un archivo `.zip`. Descomprímelo en la carpeta principal de tu proyecto, donde está (o estará) la carpeta `.git`.
@@ -121,6 +123,10 @@ No necesitas nombrar la skill: Claude la usa sola cuando le pides planificar o d
 
 > Voy a construir una API REST en Node.js con Express y PostgreSQL para reservar horas en una peluquería. Hay inicio de sesión para el administrador. Planifiquemos el proyecto.
 
+**Ordenar un proyecto que ya tiene código, pero no documentación**
+
+> Te adjunto el .zip de mi proyecto. Ya tiene el catálogo y el formulario de contacto, pero nunca lo documenté. Ayúdame a planificar lo que sigue.
+
 **Seguir trabajando en un proyecto que ya tiene la documentación**
 
 Estos pedidos se hacen en Claude Code, porque el agente necesita leer y modificar los archivos de tu repositorio:
@@ -131,11 +137,13 @@ Estos pedidos se hacen en Claude Code, porque el agente necesita leer y modifica
 
 > Ahora la API también la va a usar una app móvil de terceros. ¿Cambia el nivel del proyecto?
 
+> Planifica la siguiente épica. (En Claude Code también sirve el comando `/siguiente-epica`).
+
 ---
 
 ## 6. Cómo funciona
 
-La skill trabaja de dos formas: cuando el proyecto es nuevo y cuando ya tiene la documentación.
+La skill trabaja de tres formas: cuando el proyecto es nuevo, cuando ya tiene código pero no documentación, y cuando ya tiene la documentación.
 
 ### Proyecto nuevo
 
@@ -146,12 +154,20 @@ Entrevista  ▸  Diagnóstico  ▸  Variante  ▸  Generación  ▸  Validación
                 complejo)       fullstack)    necesita)                      repositorio)
 ```
 
-1. **Entrevista.** Claude te pregunta en bloques cortos lo que necesita saber: tipo de proyecto, [stack](#14-glosario), dónde se va a publicar, qué incluye y qué lo vuelve más delicado (inicio de sesión, conexión con otros servicios, pagos, datos personales). Si adjuntas documentos, como una descripción del proyecto, un prototipo o un README antiguo, saca las respuestas de ahí en vez de preguntarte.
+1. **Entrevista.** Claude te pregunta en bloques cortos lo que necesita saber: tipo de proyecto, [stack](#14-glosario) (te pregunta cuál prefieres y con cuáles tienes experiencia, y te da su recomendación según el tipo de proyecto), dónde se va a publicar, qué incluye y qué lo vuelve más delicado (inicio de sesión, conexión con otros servicios, pagos, datos personales). Si adjuntas documentos, como una descripción del proyecto, un prototipo o un README antiguo, saca las respuestas de ahí en vez de preguntarte.
 2. **Diagnóstico de complejidad.** Clasifica el proyecto como pequeño, mediano o complejo, te explica por qué y qué documentos va a crear. Tú confirmas o cambias el nivel. El diagnóstico es una propuesta, no una verdad absoluta.
 3. **Variante por tipo.** Un proyecto con interfaz visual lleva `DESIGN.md`. Una API lleva sus propias convenciones y, si es REST, un [contrato OpenAPI](#14-glosario).
 4. **Generación.** Crea solo los documentos que el nivel justifica, a partir de plantillas.
 5. **Validación.** Un script revisa que la estructura y los nombres sean correctos y que no queden datos inventados ni partes de la plantilla sin completar. Más detalles en la [sección 10](#10-el-validador).
 6. **Entrega.** En el chat recibes un `.zip` para descomprimir en la carpeta principal de tu proyecto. En Claude Code, los archivos se escriben directamente en el repositorio. En ambos casos recibes una explicación de por qué cada documento quedó como quedó y la lista de datos pendientes.
+
+### Proyecto que ya tiene código, pero no documentación
+
+Si entregas un repositorio, una carpeta o un `.zip` con código, Claude lo analiza antes de preguntar: deduce el stack y sus versiones, la estructura, lo que ya está construido y los riesgos, y te lo muestra para que lo confirmes. Después pregunta solo lo que el código no dice (para quién es, qué falta, qué es prioritario).
+
+- Lo que ya existe queda registrado como **Épica 00 · Línea base**: una descripción de lo construido, terminada desde el inicio y sin etapas ni bitácoras.
+- La revisión inicial del código queda como **Auditoría 01**, con hallazgos concretos (por ejemplo, claves escritas en el código o funcionalidades a medio hacer).
+- Lo pendiente y los hallazgos importantes pasan a la lista de pendientes, y la planificación sigue desde la Épica 01.
 
 ### Proyecto que ya tiene la documentación
 
@@ -159,6 +175,7 @@ Cuando el repositorio ya tiene `AGENTS.md` y la carpeta `_planificacion/`, la sk
 
 - **Funcionalidad nueva:** se agrega a la lista de pendientes ▸ se especifica, si lo justifica ▸ se planifica una etapa de trabajo con sus tareas ▸ se programa ▸ se comprueba contra los criterios de aceptación.
 - **Cambio o corrección:** se clasifica como *menor* o *significativo*. Es menor si la especificación sigue siendo correcta: no se toca y se corrige el código. Es significativo si cambia el comportamiento, la API o la arquitectura: primero se actualiza la especificación y después el código.
+- **Cierre de épica:** al terminar la última etapa de una épica, el agente revisa cómo le fue, te propone la lista de etapas de la épica siguiente (nombre y objetivo de cada una) y, cuando la apruebas, las crea todas de una vez. Así no tienes que planificar etapa por etapa. Si la épica siguiente ya tenía etapas escritas, solo propone ajustes cuando algo cambió.
 - **Nuevo diagnóstico:** si el proyecto creció o se simplificó (por ejemplo, ahora tiene inicio de sesión), la skill propone un nivel nuevo y tú decides.
 
 ---
@@ -190,7 +207,8 @@ Las demás pruebas (unitarias, E2E, cobertura, contract testing; ver el [glosari
 ├── README.md                     Presentación del proyecto para quien llega al repositorio
 ├── .claude/
 │   ├── settings.json             Permisos de Claude Code: qué hace solo, qué consulta, qué tiene prohibido
-│   └── README.md                 Explicación de cada permiso
+│   ├── README.md                 Explicación de cada permiso
+│   └── commands/                 El comando /siguiente-epica para Claude Code
 ├── docs/api/openapi.yaml         Contrato de la API REST (según el nivel)
 └── _planificacion/
     ├── README.md                 Guía de la carpeta y de cómo se trabaja
@@ -199,7 +217,7 @@ Las demás pruebas (unitarias, E2E, cobertura, contract testing; ver el [glosari
     │   ├── registro-pendientes.md   Lista de pendientes y estado del trabajo
     │   ├── decisiones.md         Registro de Decisiones Arquitectónicas (RDA)
     │   └── auditoria-tecnica.md  Revisiones técnicas y hallazgos (según el nivel)
-    ├── 10_epicas/                Bloques grandes de trabajo y sus etapas
+    ├── 10_epicas/                Bloques grandes de trabajo y sus etapas (y la Épica 00 si el proyecto ya tenía código)
     ├── 20_especificaciones/      Especificaciones por funcionalidad (desde nivel mediano)
     └── 99_bitacora/              Qué se hizo, cómo se comprobó y qué se aprendió
 ```
@@ -210,6 +228,10 @@ Los documentos son de dos tipos, con reglas distintas. En los archivos internos 
 | :--- | :------- | :-------------- | :---- |
 | **Protegidos** | `AGENTS.md`, `DESIGN.md`, `README.md`, `_planificacion/README.md` | Solo tú. El agente puede proponerte cambios, pero no aplicarlos | Describen cómo es el proyecto hoy: sin fechas ni historial |
 | **Vivos** | Registro de pendientes, decisiones, auditorías, especificaciones, OpenAPI, épicas, etapas y bitácoras | El agente, siguiendo las reglas de `_planificacion/README.md` | Llevan fechas y estados. Cada dato se escribe en un solo lugar, para que no haya dos versiones distintas |
+
+### Etapas de tamaño revisable
+
+Cada etapa (iteración) tiene **un solo objetivo**, un resultado que puedes revisar en unos **30 minutos** y **8 tareas como máximo**. Si una etapa se pasa, se parte en dos. Además, antes de empezar una etapa el agente revisa su [definición de preparada](#14-glosario): si falta algo (una especificación sin aprobar, un dato del cliente), no empieza y te dice qué falta.
 
 ### Cómo se ve un criterio de aceptación
 
@@ -233,6 +255,7 @@ El segundo se puede comprobar con un sí o un no. El primero no, y el validador 
 4. En `registro-pendientes.md`, marca la iteración como `En curso` (o pídele al agente que lo haga). Su nombre aparece en el campo **Iteración activa** al inicio de ese archivo.
 5. Pídele al agente: «Ejecuta la iteración activa». El agente leerá el registro, la etapa y su especificación, programará, comprobará el resultado, escribirá la bitácora y dejará la etapa `En revisión`, con un mensaje de commit sugerido.
 6. Revisa lo que hizo, haz tú el commit y marca la etapa como `Terminada`.
+7. Cuando termine la última etapa de una épica, el agente te propondrá las etapas de la épica siguiente. Revisa la lista, ajústala si quieres y apruébala: el agente las crea todas. También puedes pedirlo cuando quieras con «Planifica la siguiente épica» o `/siguiente-epica`.
 
 > ◆ **El agente nunca hace commits, push, merges ni despliegues.** Los permisos de `.claude/settings.json` se lo impiden, y `AGENTS.md` le explica por qué. Esos pasos siempre quedan en tus manos.
 
@@ -261,7 +284,7 @@ En Windows, usa `python` o `py` en lugar de `python3`.
 El validador entrega dos tipos de resultados:
 
 - **Errores**, que impiden la entrega hasta que se corrijan: faltan archivos que el nivel exige; hay nombres con tildes o que no siguen la convención; `settings.json` está mal escrito o tiene reglas que se contradicen; quedaron partes de la plantilla sin completar; el `README.md` del proyecto incluye bloques de código o comandos (ese archivo es una presentación, no un manual técnico; solo se admite un bloque `text` para el árbol de carpetas); el registro no tiene lista de pendientes; hay etapas o especificaciones sin criterios de aceptación; una API REST de nivel mediano o complejo no tiene contrato; o hay datos pendientes que no quedaron registrados.
-- **Avisos**, para que los revises uno por uno: fechas o referencias al pasado en los documentos protegidos, y criterios de aceptación vagos como «se ve bien» o «funciona correctamente».
+- **Avisos**, para que los revises uno por uno: fechas o referencias al pasado en los documentos protegidos; criterios de aceptación vagos como «se ve bien» o «funciona correctamente»; etapas con más de 8 tareas; una Épica 00 mal armada; y si faltan la definición de preparada en `AGENTS.md` o el comando `/siguiente-epica`.
 
 ---
 
@@ -269,7 +292,11 @@ El validador entrega dos tipos de resultados:
 
 Durante la entrevista puedes cambiar las convenciones de cada proyecto: idioma y variante regional (por defecto, español latinoamericano neutro, con trato de tú), formato de los mensajes de commit, nombres de ramas, zona horaria y gestor de paquetes.
 
-Si quieres que tus propias convenciones se usen siempre, edita la sección «Convenciones por defecto» de `SKILL.md`. Las plantillas de `assets/plantillas/` también puedes ajustarlas. Por ejemplo, los comandos de `settings.json` vienen escritos para PNPM; si usas npm o Yarn, cámbialos ahí.
+Si quieres que tus propias convenciones se usen siempre, edita la sección «Convenciones por defecto» de `SKILL.md`. Las plantillas de `assets/plantillas/` también puedes ajustarlas.
+
+**Stack y permisos.** La recomendación de stack que da la skill sale de `references/stacks.md`: frontend con Astro, Tailwind y PNPM, y backend según el tipo de proyecto (Python con Django o FastAPI para sistemas modulares que deben salir rápido o sumar IA; Java con Spring Boot o Quarkus cuando la seguridad es crítica; Node.js con Express para backends pequeños). Es solo una recomendación: manda el stack que tú elijas, y puedes editar esos criterios.
+
+Los permisos de `settings.json` se arman con `scripts/combinar_permisos.py` a partir de fragmentos por stack (`assets/permisos/`): `astro-pnpm`, `django`, `fastapi`, `spring`, `quarkus` y `express-pnpm`. Si usas otro stack, copia el fragmento más parecido y cambia sus comandos.
 
 ---
 
@@ -288,6 +315,9 @@ Esta sección resume qué se tomó de cada metodología y dónde quedó. No es n
 | Iteraciones con objetivo y entregables | Scrum | `10_epicas/`, sin duración fija |
 | Revisión y aprendizaje al cerrar | Scrum (revisión y retrospectiva, simplificadas) | Sección «Revisión» de cada bitácora y «Revisión al cierre» de cada épica |
 | Definición de terminado breve | Scrum | `AGENTS.md`, separada de los criterios de aceptación |
+| Definición de preparada | Scrum (*Definition of Ready*) | `AGENTS.md`: se revisa al crear cada iteración y antes de empezarla |
+| Planificación de lo siguiente | Scrum (Sprint Planning, simplificado) | Al cerrar cada épica se proponen y crean juntas las iteraciones de la siguiente |
+| Iteraciones de tamaño acotado | Scrum (sin estimar) | Un objetivo, revisable en unos 30 minutos y 8 tareas como máximo |
 
 Se dejaron fuera a propósito: sprints de duración fija, Daily, Sprint Planning, retrospectivas formales, historias de usuario obligatorias, puntos y estimaciones, y los archivos separados `spec.md`, `plan.md` y `tasks.md` por funcionalidad. El plan y las tareas cambian en cada iteración, y la iteración ya es su lugar natural.
 
@@ -315,6 +345,12 @@ Lo cambias. El diagnóstico es una propuesta y queda registrado como la primera 
 **¿Funciona con otros agentes además de Claude Code?**
 Los documentos que genera, sí: `AGENTS.md` y `_planificacion/` son archivos Markdown que cualquier agente puede leer. La skill en sí (la entrevista y la generación) está pensada para Claude.
 
+**¿Sirve si mi proyecto ya tiene código?**
+Sí. Adjunta el proyecto como `.zip` (o usa la skill en Claude Code dentro del repositorio). Claude deduce el stack y lo construido, lo registra como Épica 00 · Línea base, revisa el código en la Auditoría 01 y planifica desde ahí.
+
+**¿Tengo que usar el stack que recomienda la skill?**
+No. La skill pregunta cuál prefieres y con cuáles tienes experiencia; su recomendación es una sugerencia con su razón. Si eliges otro, lo usa.
+
 **¿Qué hago si no entiendo un término?**
 Revisa el [glosario](#14-glosario). Y si algo de la entrevista no te queda claro, pregúntale a Claude en el mismo chat: puede explicártelo antes de seguir.
 
@@ -341,6 +377,8 @@ Revisa el [glosario](#14-glosario). Y si algo de la entrevista no te queda claro
 | **Especificación** | Un documento que describe qué debe hacer una funcionalidad antes de programarla: cómo se comporta, qué reglas sigue y qué pasa cuando algo falla. |
 | **Criterios de aceptación** | Condiciones concretas que se comprueban con un sí o un no para saber si una funcionalidad quedó bien. Ver el ejemplo de la [sección 8](#8-qué-genera). |
 | **Casos borde** | Situaciones poco comunes que suelen romper el código: un campo vacío, un nombre con tildes, dos personas reservando la misma hora a la vez. |
+| **Definición de preparada** | Una lista breve de condiciones que una etapa debe cumplir **antes de empezar**: objetivo claro, criterios comprobables, especificación aprobada, etapas previas terminadas y datos disponibles. Es el complemento de la definición de terminado. |
+| **Línea base** | La foto de lo que un proyecto ya tenía construido cuando empezó a usar esta skill. Se registra como Épica 00. |
 | **Definición de terminado** | Una lista breve de condiciones que cualquier trabajo debe cumplir para darse por terminado. Por ejemplo, que el proyecto compile y que no queden errores en la consola. |
 | **Bitácora** | Un registro de lo que se hizo en cada etapa, cómo se comprobó y qué se aprendió. |
 | **RDA** | Registro de Decisiones Arquitectónicas. Un documento donde se anota cada decisión técnica importante y su motivo, para que nadie tenga que adivinar por qué algo se hizo así. |
@@ -354,6 +392,7 @@ Revisa el [glosario](#14-glosario). Y si algo de la entrevista no te queda claro
 | Término | Qué significa |
 | :------ | :------------ |
 | **Stack** | El conjunto de tecnologías que usa un proyecto. Por ejemplo, React, Node.js y PostgreSQL. |
+| **Monorrepo** | Un solo repositorio que contiene varias partes del proyecto, por ejemplo una carpeta `frontend/` y otra `backend/`. |
 | **Hosting** | El servicio donde se publica tu proyecto para que otros puedan verlo, como GitHub Pages, Vercel o Netlify. |
 | **API REST** | Una forma estándar de que dos programas se comuniquen por internet usando direcciones (URL) y métodos como `GET` o `POST`. |
 | **Contrato OpenAPI** | Un archivo (`openapi.yaml`) que describe con precisión qué recibe y qué responde cada dirección de tu API. Sirve de acuerdo entre quien hace la API y quien la usa. |
@@ -390,10 +429,16 @@ Revisa el [glosario](#14-glosario). Y si algo de la entrevista no te queda claro
         │   ├── entrevista.md          Preguntas de la entrevista inicial
         │   ├── niveles-complejidad.md Diagnóstico y documentos por nivel
         │   ├── tipos-proyecto.md      Variantes frontend, backend y fullstack; contrato de API
+        │   ├── stacks.md              Recomendación de stack, reglas y permisos por stack
+        │   ├── proyecto-existente.md  Cómo analizar un proyecto que ya tiene código
         │   └── guia-documentos.md     Qué lleva cada documento y por qué
-        ├── assets/plantillas/         Plantillas con la misma estructura que se entrega
+        ├── assets/
+        │   ├── plantillas/            Plantillas con la misma estructura que se entrega
+        │   ├── permisos/              Fragmentos de permisos por stack
+        │   └── linea-base/            Plantilla de la Épica 00
         └── scripts/
-            └── validar_documentacion.py
+            ├── validar_documentacion.py
+            └── combinar_permisos.py   Arma .claude/settings.json según el stack
 ```
 
 Este README está fuera de la carpeta de la skill a propósito: así no ocupa el contexto del agente ni se confunde con el `README.md` que la skill genera para cada proyecto.

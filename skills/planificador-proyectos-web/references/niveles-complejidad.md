@@ -4,7 +4,7 @@ El nivel no mide el prestigio del proyecto: decide cuánto proceso necesita. Un 
 
 ## 1. Cómo diagnosticar
 
-Evalúa cada factor con lo que sabes de la entrevista y de los documentos adjuntos. Si un factor no se conoce, no lo supongas alto ni bajo: dilo en el diagnóstico.
+Evalúa cada factor con lo que sabes de la entrevista, de los documentos adjuntos y, si el proyecto ya tiene código, del análisis de `proyecto-existente.md`. El riesgo técnico se mide contra la experiencia que declaró el desarrollador en la pregunta del stack (`stacks.md`, sección 3). Si un factor no se conoce, no lo supongas alto ni bajo: dilo en el diagnóstico.
 
 | Factor | Bajo | Medio | Alto |
 | :----- | :--- | :---- | :--- |
@@ -15,7 +15,7 @@ Evalúa cada factor con lo que sabes de la entrevista y de los documentos adjunt
 | Autenticación y autorización | No hay | Inicio de sesión con un rol | Varios roles, permisos finos, sesiones de terceros |
 | Seguridad y datos sensibles | Nada sensible | Datos personales básicos (correo, teléfono) | Datos personales sensibles, pagos, salud, menores |
 | Arquitectura | Estático o un solo servicio | Frontend y API separados | Varios servicios, colas, tareas programadas, tiempo real |
-| Riesgo técnico | Stack conocido | Una pieza nueva para el desarrollador | Tecnología inmadura, rendimiento exigente, migración de un sistema existente |
+| Riesgo técnico | Stack que el desarrollador domina | Una pieza nueva para el desarrollador | Un ecosistema que el desarrollador no conoce, tecnología inmadura, rendimiento exigente, migración de un sistema existente |
 | Despliegue e infraestructura | Hosting estático con despliegue automático | Servidor o plataforma con base de datos | Varios entornos, contenedores, infraestructura propia |
 | Mantenimiento previsto | Se publica y cambia poco | Evoluciona por etapas | Producto de largo plazo, otras personas o agentes lo mantendrán |
 

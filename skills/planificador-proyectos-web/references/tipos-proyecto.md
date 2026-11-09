@@ -1,6 +1,6 @@
 # Variantes por tipo de proyecto
 
-La estructura base es la misma para todos los proyectos. Lo que cambia según el tipo es si existe `DESIGN.md`, qué secciones lleva `AGENTS.md`, qué reglas técnicas se escriben, si hay contrato OpenAPI y qué permisos tiene `.claude/settings.json`. Lo que cambia según el nivel de complejidad está en `niveles-complejidad.md`: las dos dimensiones se combinan.
+La estructura base es la misma para todos los proyectos. Lo que cambia según el tipo es si existe `DESIGN.md`, qué secciones lleva `AGENTS.md`, qué reglas técnicas se escriben, si hay contrato OpenAPI y qué permisos tiene `.claude/settings.json`. Lo que cambia según el nivel de complejidad está en `niveles-complejidad.md`, y lo que cambia según el stack (recomendación, comandos, reglas técnicas propias y permisos) está en `stacks.md`: las tres dimensiones se combinan.
 
 ## Frontend (sitio, landing, SPA)
 
@@ -60,7 +60,7 @@ Aplica a backend y fullstack que exponen endpoints REST. Si la API no es REST, o
 
 ## Cómo adaptar `settings.json` al stack
 
-La plantilla viene escrita para un proyecto con PNPM. Cambia los comandos por los del stack real (por ejemplo `npm`, `bun`, `composer`, `pip`, `dotnet`) y conserva siempre:
+`settings.json` se arma con `scripts/combinar_permisos.py` a partir de los fragmentos de `assets/permisos/` (uno por stack: Astro, Django, FastAPI, Spring Boot, Quarkus, Express), como explica `stacks.md`, sección 6. Después se ajusta al proyecto real. Si el stack no tiene fragmento, parte del más parecido y cambia los comandos. En cualquier caso, conserva siempre:
 
 - En **allow**: los comandos de desarrollo, compilación, revisión, formato y pruebas; lectura de Git (`status`, `diff`, `log`, `show`); edición de las carpetas de código y de `_planificacion/` (incluida `20_especificaciones/`), y de `docs/api/` si hay contrato.
 - En **ask**: instalar, actualizar o quitar dependencias; crear o cambiar ramas; mover o borrar archivos; editar archivos de configuración de la raíz.

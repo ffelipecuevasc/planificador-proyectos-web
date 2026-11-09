@@ -13,8 +13,10 @@ el proyecto expone una API REST (--api-rest).
 Errores (código de salida 1): archivos obligatorios faltantes, nombres no ASCII,
 settings.json inválido, marcadores de plantilla sin rellenar, DESIGN.md en un backend,
 registro sin backlog, iteraciones o especificaciones sin criterios de aceptación.
-Advertencias: posibles rastros de tiempo en los documentos inmutables, criterios vagos y
-marcadores PENDIENTE_ que conviene revisar. El zip solo se genera si no hay errores.
+Advertencias: posibles rastros de tiempo en los documentos inmutables, criterios vagos,
+iteraciones con más de 8 tareas, una épica 00 de línea base mal formada, falta de la
+definición de preparada o del comando /siguiente-epica, y marcadores PENDIENTE_ que
+conviene revisar. El zip solo se genera si no hay errores.
 """
 
 import argparse
@@ -151,6 +153,30 @@ def revisar_criterios(rel: str, texto: str, errores: list, avisos: list, minimo:
             avisos.append(f"{rel}: criterio posiblemente vago («{m.group(0)}»); un criterio se comprueba con una medición o un comando.")
 
 
+MAX_TAREAS = 8
+
+
+def revisar_tamano(rel: str, texto: str, avisos: list):
+    """Tamaño máximo de una iteración: 8 tareas. Si se pasa, conviene partirla."""
+    tareas = seccion(texto, "Tareas")
+    if tareas is None:
+        return
+    n = len([l for l in tareas.splitlines()[1:] if re.match(r"^\d+\.\s", l.strip())])
+    if n > MAX_TAREAS:
+        avisos.append(f"{rel}: tiene {n} tareas (máximo {MAX_TAREAS}); conviene partir la iteración.")
+
+
+def revisar_linea_base(ep: Path, avisos: list):
+    """La épica 00 registra lo que ya existía: Terminada, sin iteraciones ni bitácoras."""
+    definicion = ep / "definicion-epica-00.md"
+    if definicion.is_file() and not re.search(r"^- \*\*Estado:\*\* Terminada", definicion.read_text(encoding="utf-8"), flags=re.M):
+        avisos.append(f"{ep.name}: la épica de línea base debe estar «Terminada».")
+    if list(ep.glob("iteracion-*.md")):
+        avisos.append(f"{ep.name}: la épica de línea base no lleva iteraciones.")
+    if (ep.parent.parent / "99_bitacora" / ep.name).exists():
+        avisos.append(f"{ep.name}: la épica de línea base no lleva carpeta de bitácoras.")
+
+
 def validar(raiz: Path, tipo: str, nivel: str = "mediano", api_rest: bool = False):
     errores, avisos = [], []
 
@@ -187,7 +213,12 @@ def validar(raiz: Path, tipo: str, nivel: str = "mediano", api_rest: bool = Fals
             if not re.match(rf"(iteracion-{nn}-\d{{2}}-[a-z0-9-]+|evidencia-{nn}-\d{{2}})\.md$", f.name):
                 errores.append(f"Nombre fuera de convención: {ep.name}/{f.name}")
             elif f.name.startswith("iteracion-"):
-                revisar_criterios(f"{ep.name}/{f.name}", f.read_text(encoding="utf-8"), errores, avisos, r"^- \[[ xX]\]")
+                texto_it = f.read_text(encoding="utf-8")
+                revisar_criterios(f"{ep.name}/{f.name}", texto_it, errores, avisos, r"^- \[[ xX]\]")
+                revisar_tamano(f"{ep.name}/{f.name}", texto_it, avisos)
+        if nn == "00":
+            revisar_linea_base(ep, avisos)
+            continue
         if not (raiz / "_planificacion/99_bitacora" / ep.name).is_dir():
             avisos.append(f"Falta la carpeta de bitácoras de {ep.name} en 99_bitacora/ (créala con un .gitkeep).")
 
@@ -253,6 +284,12 @@ def validar(raiz: Path, tipo: str, nivel: str = "mediano", api_rest: bool = Fals
             rel = f.relative_to(raiz).as_posix()
             for m in MARCADOR_PLANTILLA.finditer(texto):
                 errores.append(f"Marcador de plantilla sin rellenar en {rel}: {m.group(0)}")
+
+    agentes = raiz / "AGENTS.md"
+    if agentes.is_file() and "definición de preparada" not in agentes.read_text(encoding="utf-8").lower():
+        avisos.append("AGENTS.md no tiene la «Definición de preparada»: sin ella, el agente empieza iteraciones que no están listas.")
+    if not (raiz / ".claude/commands/siguiente-epica.md").is_file():
+        avisos.append("Falta .claude/commands/siguiente-epica.md (el comando /siguiente-epica de Claude Code).")
 
     registro = raiz / "_planificacion/00_producto/registro-pendientes.md"
     if registro.is_file() and seccion(registro.read_text(encoding="utf-8"), "Backlog") is None:

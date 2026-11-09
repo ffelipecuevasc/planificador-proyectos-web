@@ -4,12 +4,14 @@ Preguntas para reunir lo necesario antes de generar la documentación. No las ha
 
 La profundidad depende del proyecto: si desde el primer mensaje se ve pequeño (un sitio presentacional, una landing, una API de pocos recursos sin usuarios), basta con el bloque 1 y lo esencial del bloque 2; el resto se cubre con los valores por defecto y con marcadores de pendiente. Si se ve mediano o complejo, recorre todos los bloques que apliquen.
 
+Si el desarrollador entrega un proyecto que ya tiene código (un repositorio, una carpeta o un `.zip`), primero analízalo con `proyecto-existente.md`: el stack, la estructura y buena parte del alcance salen del código, y la entrevista se reduce a confirmar lo deducido y preguntar lo que el código no dice (cliente, propósito, público, prioridades).
+
 Si una respuesta falta al final, no la inventes: usa `PENDIENTE_CLIENTE` o `PENDIENTE_DESARROLLADOR` y regístrala en `registro-pendientes.md`.
 
 ## Bloque 1 · Lo que decide la estructura (obligatorio antes de generar)
 
 1. **Tipo de proyecto**: ¿frontend (sitio, landing, SPA), backend o API sin interfaz, o fullstack? Si hay API, ¿es REST?
-2. **Stack**: framework, lenguaje, gestor de paquetes con versión, base de datos si hay, versión de Node u otro entorno.
+2. **Stack**: qué stack prefiere el desarrollador y con cuáles tiene experiencia, y **en la misma pregunta** tu recomendación según el tipo de producto, con su razón en una línea (criterios y ejemplo en `stacks.md`). Después confirma lo que falte: gestor de paquetes y versión (`uv` o `pip`, Maven o Gradle), base de datos si hay y versión del entorno (Node, Python, Java).
 3. **Hosting y despliegue**: dónde se publica y cómo (despliegue automático desde `main`, vistas previas por rama, contenedores, servidor propio).
 4. **Alcance comprometido**: qué entra y qué no, y las funcionalidades principales que ya conoces. Si hay una propuesta comercial, pídela.
 5. **Lo que sube el riesgo**, en una pregunta: ¿hay inicio de sesión o roles, integraciones con servicios externos, pagos o datos personales?

@@ -1,6 +1,6 @@
 ---
 name: planificador-proyectos-web
-description: "Planifica y documenta proyectos web (frontend, backend o API, fullstack) en el idioma que elijas (por defecto, español), con un proceso proporcional a su complejidad: diagnostica si el proyecto es pequeño, mediano o complejo y activa solo lo que aporta (AGENTS.md, DESIGN.md, README.md, .claude/, y en _planificacion/ el registro con backlog, decisiones, especificaciones, épicas, iteraciones y bitácoras; OpenAPI si expone una API REST). Úsala siempre que el desarrollador quiera planificar, documentar o arrancar un proyecto web, especificar una funcionalidad nueva, gestionar un cambio o una corrección con trazabilidad, rediagnosticar la complejidad, preparar las reglas para agentes de IA (Claude Code, Antigravity, Codex) o revisar y optimizar un DESIGN.md o README.md existente, aunque no nombre la skill ni los archivos."
+description: "Planifica y documenta proyectos web (frontend, backend o API, fullstack) en el idioma que elijas (por defecto, español), con un proceso proporcional a su complejidad: diagnostica si el proyecto es pequeño, mediano o complejo y activa solo lo que aporta (AGENTS.md, DESIGN.md, README.md, .claude/, y en _planificacion/ el registro con backlog, decisiones, especificaciones, épicas, iteraciones y bitácoras; OpenAPI si expone una API REST). Úsala siempre que el desarrollador quiera planificar, documentar o arrancar un proyecto web (nuevo o con código ya escrito), elegir el stack, planificar la siguiente épica, especificar una funcionalidad nueva, gestionar un cambio o una corrección con trazabilidad, rediagnosticar la complejidad, preparar las reglas para agentes de IA (Claude Code, Antigravity, Codex) o revisar y optimizar un DESIGN.md o README.md existente, aunque no nombre la skill ni los archivos."
 ---
 
 # Planificador de proyectos web
@@ -28,11 +28,15 @@ El modelo viene de proyectos reales de su autor. Varias reglas de abajo existen 
 
 ## Modo arranque: planificar un proyecto nuevo
 
-### 1. Entrevista
+### 1. Entrevista (o análisis del código existente)
+
+**Si el proyecto ya tiene código** (un repositorio abierto en Claude Code, una carpeta o un `.zip` adjunto) pero no tiene `AGENTS.md` ni `_planificacion/`, empieza por `references/proyecto-existente.md`: deduce del código el stack, la estructura, lo construido y los riesgos; muéstralo en el chat para que el desarrollador lo confirme, y pregunta solo lo que el código no responde. Lo construido queda como **Épica 00 · Línea base** (`Terminada`, sin iteraciones ni bitácoras) y la revisión inicial del código como **Auditoría 01**. En el chat, pide el proyecto como `.zip`.
 
 Antes de generar nada, lee `references/entrevista.md` y haz las preguntas que falten. Pregunta en bloques cortos (no más de cinco preguntas por mensaje) y empieza por lo que decide la estructura: tipo de proyecto, stack, alcance y si hay frontend. Si el desarrollador adjunta documentos previos (propuesta comercial, prototipo, brief, un DESIGN.md o README.md antiguo) o si trabajas en un repositorio que ya tiene documentación, sácales las respuestas antes de preguntar: no repitas preguntas cuya respuesta ya está escrita.
 
-No hace falta tener todo para empezar: lo que siga sin respuesta se marca como pendiente (regla 4). Lo que sí necesitas antes de generar es el tipo de proyecto, el stack principal y el alcance, porque cambian qué archivos existen. Si el proyecto se ve pequeño desde el primer mensaje, basta con el bloque 1 de la entrevista y lo esencial del bloque 2.
+No hace falta tener todo para empezar: lo que siga sin respuesta se marca como pendiente (regla 4). Lo que sí necesitas antes de generar es el tipo de proyecto, el stack principal y el alcance, porque cambian qué archivos existen.
+
+**El stack se pregunta con una recomendación.** En la misma pregunta: qué stack prefiere el desarrollador, con cuáles tiene experiencia y cuál recomiendas tú según el tipo de producto, con su razón en una línea. Los criterios están en `references/stacks.md`: frontend con Astro, Tailwind y PNPM; backend en Python (Django o FastAPI) para sistemas modulares que deben salir rápido y pueden sumar nube o agentes de IA, en Java (Spring Boot o Quarkus) cuando la seguridad es crítica (sector público, banca, finanzas) y en Node.js con Express para backends pequeños y minimalistas. La experiencia del desarrollador entra al diagnóstico como riesgo técnico. Si el proyecto se ve pequeño desde el primer mensaje, basta con el bloque 1 de la entrevista y lo esencial del bloque 2.
 
 ### 2. Diagnóstico de complejidad
 
@@ -50,6 +54,14 @@ Lee `references/tipos-proyecto.md` y aplica la variante que corresponde:
 - **Backend o API sin interfaz**: sin `DESIGN.md`; las convenciones generales de la API van en una sección propia de `AGENTS.md` y, si expone una API REST, el contrato vive en `docs/api/openapi.yaml` según el nivel.
 - **Fullstack**: `DESIGN.md` cubre la interfaz; las convenciones de la API van en `AGENTS.md` y el contrato en `docs/api/openapi.yaml`.
 
+Aplica también la ficha del stack acordado (`references/stacks.md`, sección 4): comandos, reglas técnicas propias y definición de terminado. Arma `.claude/settings.json` con el script, nunca a mano:
+
+```bash
+python scripts/combinar_permisos.py --stack <fragmento>[:carpeta] [--stack ...] [--api-rest] --salida <directorio>/.claude/settings.json
+```
+
+Fragmentos: `astro-pnpm`, `django`, `fastapi`, `spring`, `quarkus`, `express-pnpm` (`--listar` los muestra). En un monorrepo fullstack, cada fragmento va con su carpeta (`--stack astro-pnpm:frontend --stack django:backend`). Después revisa el resultado contra el proyecto real.
+
 ### 4. Generar
 
 Lee `references/guia-documentos.md` antes de escribir: ahí está, documento por documento, qué contiene, qué no contiene y por qué. Las plantillas están en `assets/plantillas/`, con la misma estructura de carpetas que el entregable. Cópialas a un directorio de trabajo, rellénalas con los datos del proyecto y adapta lo que el proyecto pida: las plantillas son un punto de partida, no un formulario. Las secciones marcadas con un comentario `<!-- PLANTILLA: … -->` se conservan o se borran según el nivel y el tipo, y el comentario se borra siempre.
@@ -62,8 +74,9 @@ Estructura del entregable (lo marcado como condicional depende del nivel y del t
 ├── DESIGN.md                     (solo si hay interfaz)
 ├── README.md
 ├── .claude/
-│   ├── settings.json
-│   └── README.md
+│   ├── settings.json             (combinado con scripts/combinar_permisos.py)
+│   ├── README.md
+│   └── commands/siguiente-epica.md
 ├── docs/api/openapi.yaml         (API REST: obligatorio desde nivel mediano)
 └── _planificacion/
     ├── README.md
@@ -73,6 +86,8 @@ Estructura del entregable (lo marcado como condicional depende del nivel y del t
     │   ├── decisiones.md
     │   └── auditoria-tecnica.md     (desde nivel mediano, o si hay insumos que auditar)
     ├── 10_epicas/
+    │   ├── epica-00-linea-base/     (solo si el proyecto ya tenía código)
+    │   │   └── definicion-epica-00.md
     │   └── epica-01-<nombre>/
     │       ├── definicion-epica-01.md
     │       └── iteracion-01-01-<descripcion>.md
@@ -82,7 +97,9 @@ Estructura del entregable (lo marcado como condicional depende del nivel y del t
         └── epica-01-<nombre>/       (vacía al inicio, con un .gitkeep)
 ```
 
-Genera las épicas que el proyecto necesite con su definición, pero escribe en detalle solo las iteraciones de la primera épica (y las de la segunda si ya están claras). Las iteraciones lejanas, escritas hoy, se reescriben casi siempre: basta con nombrarlas en la tabla de su `definicion-epica-XX.md`. El backlog de `registro-pendientes.md` sí lista desde el inicio todo lo conocido, priorizado.
+Genera las épicas que el proyecto necesite con su definición, pero escribe en detalle solo las iteraciones de la primera épica (y las de la segunda si ya están claras). Las iteraciones lejanas, escritas hoy, se reescriben casi siempre: basta con nombrarlas en la tabla de su `definicion-epica-XX.md`. Las de cada épica siguiente se generan **todas juntas al cerrar la anterior** (ver «Cierre de épica» en el modo evolución). El backlog de `registro-pendientes.md` sí lista desde el inicio todo lo conocido, priorizado.
+
+Cada iteración que escribas respeta el **tamaño máximo** (un objetivo, revisable en unos 30 minutos, 8 tareas como máximo; si se pasa, pártela) y nace **preparada**: la revisas contra la definición de preparada de `AGENTS.md` y registras como pendiente lo que falte por causas externas. Detalle en `references/guia-documentos.md`, secciones 1 y 11.
 
 Escribe especificaciones (`20_especificaciones/`) solo para las funcionalidades de las primeras iteraciones que las justifican (ver `references/niveles-complejidad.md`). Nacen en estado `Borrador` y el desarrollador las aprueba. Las demás funcionalidades quedan en el backlog y se especifican cuando se acerque su turno.
 
@@ -122,6 +139,7 @@ Cuando el repositorio ya tiene `AGENTS.md` y `_planificacion/`, no regeneres nad
 
 - **Funcionalidad nueva:** fila en el backlog → especificación si el nivel y la funcionalidad lo justifican → iteración con plan técnico y tareas → implementación → validación contra los criterios.
 - **Cambio o corrección:** entender el pedido → identificar lo afectado → clasificarlo como menor o significativo → actualizar solo los documentos afectados → tareas → implementación → verificación → registro. Una corrección menor no lleva especificación nueva; un cambio que altera el comportamiento esperado, el contrato de la API o la arquitectura actualiza primero la especificación, el contrato o la RDA, y después se implementa.
+- **Cierre de épica y planificación de la siguiente:** es el paso final de la última iteración de cada épica, y el desarrollador también lo puede pedir («planifica la siguiente épica», o `/siguiente-epica` en Claude Code). Revisión al cierre de la épica que termina → propuesta en el chat de las iteraciones de la siguiente (número, nombre, objetivo en una línea, qué cubre del backlog y qué necesita), todas dentro del tamaño máximo → aprobación del desarrollador → generación de **todas** esas iteraciones de una vez, con el registro y el backlog al día. Si la épica siguiente ya tenía iteraciones detalladas, no se rehacen: se proponen ajustes solo si la revisión al cierre cambió algo.
 - **Rediagnóstico:** si el proyecto ganó factores de complejidad (autenticación, una integración nueva, datos personales, más consumidores de la API) o los perdió, propón el nivel nuevo con sus razones. Si el desarrollador lo acepta, registra una RDA que reemplaza a la anterior y entrega la propuesta de cambios a los documentos inmutables para que él la aplique.
 
 Los documentos inmutables tampoco se editan en este modo, aunque los hayas generado tú: entrega la propuesta (archivo, sección, texto actual, texto propuesto y por qué). En Claude Code, además, `.claude/settings.json` lo impide.
@@ -145,6 +163,7 @@ Los documentos inmutables tampoco se editan en este modo, aunque los hayas gener
 
 Son las convenciones con que viene la skill. Úsalas salvo que el desarrollador pida otras en la entrevista (bloque 6); lo que cambie se escribe en los documentos de su proyecto, no en esta skill. Más adelante cada desarrollador puede editar esta sección para dejar sus propias convenciones como valores por defecto.
 
+- **Stack recomendado**: frontend con Astro, Tailwind CSS y PNPM; el backend según el tipo de proyecto (Python con Django o FastAPI, Java con Spring Boot o Quarkus, o Node.js con Express). Es solo la recomendación: manda el stack que elija el desarrollador. Los criterios se pueden editar en `references/stacks.md`.
 - **Git**: commits, push, merge, pull, rebase, reset y tags los hace solo el desarrollador. El agente propone ramas con el formato `iteracion/XX-YY-descripcion-corta` (o `correccion/descripcion-corta` para una corrección fuera de iteración) y espera aprobación antes de crearlas.
 - **Commits**: `Épica N - Iteración NN-NN: descripción` para el trabajo de una iteración y `Corrección: descripción` para una corrección fuera de iteración; una línea de máximo 200 caracteres, en el idioma del proyecto. El agente cuenta los caracteres antes de entregarlo. Si el desarrollador prefiere otro formato (por ejemplo, Conventional Commits), se usa ese en todos los documentos.
 - **Despliegue**: el agente nunca despliega ni toca la configuración del hosting, del DNS ni de servicios externos (analítica, Search Console, anuncios).

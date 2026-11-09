@@ -20,6 +20,7 @@ Qué lleva cada archivo, qué no lleva y por qué. Las plantillas correspondient
 14. Especificaciones: spec-funcionalidad.md
 15. Contrato de la API: docs/api/openapi.yaml
 16. Cambios y correcciones: qué documentos se tocan
+17. Proyecto con código existente: épica 00 y auditoría inicial
 
 ---
 
@@ -40,9 +41,9 @@ Ojo con una trampa de Claude Code: si en la carpeta del proyecto o más arriba e
 7. **Reglas de contenido**: idioma, no inventar datos ni resultados, marcadores de pendientes.
 8. **Reglas técnicas** del tipo de proyecto (ver `tipos-proyecto.md`).
 9. **Convenciones de la API**, solo en backend y fullstack: reglas generales y dónde está el contrato, no el detalle de cada ruta.
-10. **Flujo de trabajo por iteración**: leer, comprobar que la especificación esté aprobada, proponer rama, implementar solo lo de los criterios, verificar, escribir la bitácora con su revisión, actualizar el registro, entregar el resumen y el commit sugerido. Incluye la regla de autonomía de la sección 13 de esta guía.
+10. **Flujo de trabajo por iteración**: leer, comprobar que la especificación esté aprobada, proponer rama, implementar solo lo de los criterios, verificar, escribir la bitácora con su revisión, actualizar el registro, entregar el resumen y el commit sugerido. Incluye la regla de autonomía de la sección 13 de esta guía y, como último paso, que la última iteración de una épica termina con el cierre de la épica y la propuesta de iteraciones de la siguiente (sección 10 de esta guía).
 11. **Cambios y correcciones**: el flujo corto de la sección 16 de esta guía.
-12. **Definición de terminado**: tres a cinco condiciones que valen para todo trabajo (compilación si aplica, la aplicación se ejecuta, criterios comprobados con evidencia, documentos afectados al día, bitácora o línea de historial), más los comandos que el desarrollador declaró obligatorios. Aparte, en una lista separada, las verificaciones **recomendadas**: se escriben como recomendación y el agente no las presenta como requisito. No se confunde con los criterios de aceptación, que son de cada funcionalidad o iteración.
+12. **Definición de preparada y de terminado.** La **preparada** es la lista de chequeo antes de empezar una iteración: objetivo en una o dos frases, criterios verificables, especificación `Aprobada` si la tiene, dependencias terminadas, datos del cliente disponibles (o acuerdo de trabajar con el marcador) y tamaño dentro del máximo (sección 11 de esta guía). Si falla una condición, el agente no empieza y dice qué falta. La **de terminado** son tres a cinco condiciones que valen para todo trabajo (compilación si aplica, la aplicación se ejecuta, criterios comprobados con evidencia, documentos afectados al día, bitácora o línea de historial), más los comandos que el desarrollador declaró obligatorios. Aparte, en una lista separada, las verificaciones **recomendadas**: se escriben como recomendación y el agente no las presenta como requisito. No se confunde con los criterios de aceptación, que son de cada funcionalidad o iteración.
 13. **Cuándo detenerse y preguntar**, incluido cuando una tarea introduce un factor que cambia la complejidad del proyecto.
 
 **No lleva:** historial, fechas, iteraciones ni RDA como justificación (es inmutable). Las excepciones a una regla se escriben como parte de la regla, con su razón técnica. Conviene que no pase de unas 200 líneas: es lo que el agente carga en cada sesión.
@@ -75,7 +76,9 @@ La vitrina del repositorio en GitHub. Sus lectores llegan sin contexto (personas
 
 ## 4. .claude/settings.json y .claude/README.md
 
-**`settings.json`**: JSON limpio, sin comentarios (JSON no los admite y el archivo dejaría de cargarse) y sin claves inventadas para comentar (generan advertencias de esquema). Se ordena en tres bloques, `allow`, `ask` y `deny`, y dentro de cada uno se agrupan las reglas por tema en un orden fijo: comandos del proyecto, Git, sistema de archivos, edición, lectura, web. Los cuatro documentos inmutables van en `deny` de edición, no en `ask`, porque el desarrollador decidió que ningún agente los edite.
+**`settings.json`**: se arma con `scripts/combinar_permisos.py` a partir de los fragmentos por stack de `assets/permisos/` (ver `stacks.md`, sección 6) y después se ajusta al proyecto. JSON limpio, sin comentarios (JSON no los admite y el archivo dejaría de cargarse) y sin claves inventadas para comentar (generan advertencias de esquema). Se ordena en tres bloques, `allow`, `ask` y `deny`, y dentro de cada uno se agrupan las reglas por tema en un orden fijo: comandos del proyecto, Git, sistema de archivos, edición, lectura, web. Los cuatro documentos inmutables van en `deny` de edición, no en `ask`, porque el desarrollador decidió que ningún agente los edite.
+
+**`.claude/commands/siguiente-epica.md`**: el comando `/siguiente-epica` de Claude Code. Es un atajo corto que remite a la sección 4.4 de `_planificacion/README.md`; el flujo completo vive allá para que los agentes sin este atajo hagan lo mismo. Se copia tal cual de la plantilla.
 
 **`.claude/README.md`**: explica cada bloque y cada grupo de reglas en una tabla «regla · por qué», cómo se resuelven los conflictos (`deny` gana sobre `ask` y `ask` sobre `allow`) y que el archivo `settings.local.json`, si existe, es personal y no se versiona. Este README también es documentación del desarrollador: el agente no lo edita (está dentro de `.claude/`).
 
@@ -124,18 +127,32 @@ Registro acumulativo: las auditorías se agregan al final y nunca se borran. Cad
 - **Numeración**: antes de agregar una auditoría, busca el último número usado en el archivo y suma uno. IDs con el formato `AUD-NN-MMM` (número de auditoría y correlativo del hallazgo). Nunca se reutiliza un número.
 - **Cierre**: un hallazgo se marca «Resuelto en XX-YY» o «Resuelto en RDA-XXX», con la evidencia mínima («medido en…»). «Riesgo aceptado» solo si el desarrollador lo aceptó y consta dónde.
 - **Severidad**: Alta (bloquea la publicación o afecta al usuario o al negocio), Media (afecta calidad o rendimiento), Baja (mejora).
-- Al inicio del proyecto, si hay insumos que auditar (prototipo, propuesta, sitio anterior), genera la Auditoría 01 con sus hallazgos. Si no los hay, el archivo nace solo con el encabezado y las reglas.
+- Al inicio del proyecto, si hay insumos que auditar (prototipo, propuesta, sitio anterior, o código existente según la sección 17), genera la Auditoría 01 con sus hallazgos. Si no los hay, el archivo nace solo con el encabezado y las reglas.
 - **En nivel pequeño**, el archivo no se genera salvo que haya insumos que auditar. Si más adelante se hace una auditoría, se crea con la plantilla.
 
 ## 10. Épicas: definicion-epica-XX.md
 
 Carpeta `10_epicas/epica-XX-<nombre-corto>/`. La definición lleva: estado, objetivo, alcance, tabla de iteraciones (número y nombre), decisiones de la épica si las hay y criterio de término verificable (qué se mide para darla por terminada).
 
-Al cerrar la épica, el agente completa **«Revisión al cierre»** en pocas líneas: si se cumplió el criterio de término, qué se aprendió y qué cambia en el backlog o en las épicas siguientes. Es lo único que se conserva de una retrospectiva: lo que orienta el trabajo que viene. En nivel pequeño, la sección se puede omitir.
+Al cerrar la épica, el agente completa **«Revisión al cierre»** en pocas líneas: si se cumplió el criterio de término, qué se aprendió y qué cambia en el backlog o en las épicas siguientes. Es lo único que se conserva de una retrospectiva: lo que orienta el trabajo que viene. En nivel pequeño, la sección puede ser de una o dos líneas.
+
+**Cierre de épica y planificación de la siguiente.** Al arrancar se detallan solo las iteraciones de la primera épica; las de cada épica siguiente se generan **todas juntas** al cerrar la anterior, para no planificar iteración por iteración. Es el último paso de la última iteración de la épica (y el desarrollador puede pedirlo en cualquier momento con «planifica la siguiente épica» o `/siguiente-epica`):
+
+1. Revisión al cierre de la épica que termina.
+2. Propuesta en el chat de las iteraciones de la épica siguiente: número, nombre, objetivo en una línea, elementos del backlog que cubre y qué necesita cada una. Toda iteración respeta el tamaño máximo (sección 11).
+3. Si la épica siguiente ya tenía iteraciones detalladas, no se rehacen: se proponen ajustes solo si la revisión al cierre cambió algo.
+4. Con la aprobación del desarrollador, se generan de una vez todos los archivos de iteración y se actualizan la tabla de la épica, el registro y el backlog.
+5. Cada iteración generada se revisa contra la definición de preparada; lo que falte por causas externas se registra como pendiente.
+
+Como los agentes que trabajan en el repositorio no tienen esta skill, el flujo queda escrito en `_planificacion/README.md` (sección 4.4), resumido en el paso final del flujo por iteración de `AGENTS.md` y con el atajo `.claude/commands/siguiente-epica.md` para Claude Code.
 
 ## 11. Iteraciones: iteracion-XX-YY-descripcion.md
 
-Nombre con descripción corta en ASCII: `iteracion-01-01-andamiaje.md`. Una unidad de trabajo acotada, sin duración fija: puede ser una sesión, un hito o un bloque funcional, mientras se pueda revisar de una vez. Lleva: épica, estado, rama sugerida, dependencias, especificación y criterios que implementa (si tiene), RDA relacionadas, hallazgos que cierra, objetivo, alcance y entregables, plan técnico (cuando aplica), tareas, criterios de aceptación verificables (casillas), fuera de alcance y datos requeridos del cliente.
+Nombre con descripción corta en ASCII: `iteracion-01-01-andamiaje.md`. Una unidad de trabajo acotada, sin duración fija: puede ser una sesión, un hito o un bloque funcional, mientras se pueda revisar de una vez.
+
+**Tamaño máximo:** un solo objetivo, un resultado que el desarrollador revisa en unos 30 minutos y **8 tareas como máximo**. Si una iteración se pasa, se parte antes de escribirla en detalle, cada parte con su objetivo y sus criterios. No es una estimación (el backlog sigue sin puntos): es la regla para cortar el trabajo en trozos que un agente termina y una persona revisa de una vez. El validador avisa si una iteración tiene más de 8 tareas.
+
+**Nace preparada:** al escribir una iteración, revísala contra la definición de preparada de `AGENTS.md` (sección 1 de esta guía, punto 12). Lo que falte por causas externas se registra como pendiente y queda anotado en la iteración. Lleva: épica, estado, rama sugerida, dependencias, especificación y criterios que implementa (si tiene), RDA relacionadas, hallazgos que cierra, objetivo, alcance y entregables, plan técnico (cuando aplica), tareas, criterios de aceptación verificables (casillas), fuera de alcance y datos requeridos del cliente.
 
 - **Objetivo:** una o dos frases sobre lo que la iteración deja funcionando. Es lo que se revisa al cerrar.
 - **Alcance y entregables:** qué existe al terminar (una página publicada, un endpoint respondiendo, un componente en el sistema de diseño). Sirve para revisar el resultado sin leer el código.
@@ -216,3 +233,14 @@ El flujo completo queda escrito en `_planificacion/README.md` (sección 4.3) y r
 La pregunta que decide la clase es: **¿después del cambio, la especificación (o el contrato, o la RDA) sigue describiendo bien el sistema?** Si sí, es menor. Si no, es significativo. Ante la duda, el agente pregunta.
 
 Una corrección menor no necesita un archivo de iteración. Si pertenece a la iteración activa, se hace dentro de ella; si no, se trabaja como corrección fuera de iteración, con su rama y su formato de commit.
+
+## 17. Proyecto con código existente: épica 00 y auditoría inicial
+
+Cuando el proyecto ya tiene código pero no esta documentación, el arranque parte por analizar el código (`proyecto-existente.md`). Además de los documentos de siempre, se generan:
+
+- **`10_epicas/epica-00-linea-base/definicion-epica-00.md`**, desde `assets/linea-base/`: lo que ya existe, con su estado observado o verificado, dónde está en el código y el stack detectado con el archivo del que se dedujo. Nace `Terminada`, no lleva iteraciones ni bitácoras (tampoco carpeta en `99_bitacora/`) y no se edita después.
+- **Auditoría 01** en `auditoria-tecnica.md`, con la revisión inicial del código, aunque el nivel sea pequeño.
+- **RDA de las decisiones previas** (stack, hosting, base de datos), en estado `Aceptada`, sin inventar alternativas ni razones que nadie dejó escritas.
+- **Backlog** con lo que está a medio hacer y los hallazgos Altos y Medios, además de lo que salga de la entrevista.
+
+Las épicas planificadas empiezan en la 01. La tabla de estado del registro lleva una primera fila para la línea base.

@@ -93,14 +93,15 @@ El contrato de cada ruta (endpoints, parámetros, modelos, códigos HTTP y error
 ## 10. Flujo de trabajo por iteración
 
 1. Lee el registro y la iteración activa (sección 3).
-2. Si la iteración implementa una especificación, comprueba que esté `Aprobada`. Si está en `Borrador`, no implementes: avisa al desarrollador.
+2. Comprueba la definición de preparada (sección 12.1). Si no se cumple, no implementes: avisa al desarrollador qué falta.
 3. Si la iteración requiere una rama, propón el nombre y espera aprobación.
 4. Sigue el plan técnico y las tareas de la iteración. Implementa solo lo descrito en los criterios de aceptación. Si detectas trabajo fuera de alcance, anótalo como propuesta en `registro-pendientes.md`; no lo hagas.
 5. Ejecuta la iteración completa. Resuelve por tu cuenta todo lo que puedas, incluidas las verificaciones contra producción con las herramientas que tengas permitidas. Pide datos al desarrollador solo si, después de intentarlo por todos los medios, no puedes obtenerlos: en ese caso sigue la sección «Evidencia de producción» de `_planificacion/README.md`.
-6. Verifica según la definición de terminado (sección 12).
+6. Verifica según la definición de terminado (sección 12.2).
 7. Escribe la bitácora en `_planificacion/99_bitacora/<epica>/` con la plantilla de `_planificacion/README.md`, incluida su revisión: resultado frente al objetivo, qué se aprendió y qué cambia para lo que sigue.
 8. Actualiza en la misma pasada `registro-pendientes.md` (estado de la iteración, filas del backlog que cubrió, historial de una línea con enlace a la bitácora) y, si corresponde, la especificación, `decisiones.md` y `auditoria-tecnica.md`. No toques documentos que el trabajo no afectó.
 9. Deja la iteración en `En revisión` y entrega al desarrollador un resumen con los archivos modificados y un mensaje de commit sugerido con el formato `Épica N - Iteración NN-NN: descripción`, en una sola línea de máximo 200 caracteres y en {{IDIOMA_Y_VARIANTE}}; cuenta los caracteres antes de entregarlo. Por ejemplo: `Épica 2 - Iteración 02-01: agrega los tokens de color, tipografía y espaciado`. El commit lo hace el desarrollador.
+10. Si era la última iteración de su épica, en la misma entrega cierra la épica y propón las iteraciones de la siguiente, según la sección 4.4 de `_planificacion/README.md`: revisión al cierre, propuesta con nombre y objetivo de cada iteración, y espera de aprobación. Con la aprobación, genera todas las iteraciones de la épica siguiente de una vez. El desarrollador también puede pedirlo en cualquier momento («planifica la siguiente épica» o `/siguiente-epica`).
 
 ## 11. Cambios y correcciones
 
@@ -117,7 +118,22 @@ Cuando te pidan corregir un error o cambiar algo que ya existe:
 
 Los detalles están en `_planificacion/README.md`, sección 4.3.
 
-## 12. Definición de terminado
+## 12. Definición de preparada y de terminado
+
+### 12.1 Preparada: antes de empezar una iteración
+
+Una iteración está lista para empezar solo cuando:
+
+1. Su objetivo cabe en una o dos frases.
+2. Sus criterios de aceptación se pueden comprobar con un comando o una medición.
+3. Si implementa una especificación, está `Aprobada`.
+4. Las iteraciones de las que depende están `Terminada`.
+5. Los datos del cliente que necesita están confirmados, o está acordado trabajar con `PENDIENTE_CLIENTE` mientras llegan.
+6. Cabe en el tamaño máximo: un objetivo, revisable en unos 30 minutos y 8 tareas como máximo. Si no cabe, propón partirla antes de empezar.
+
+Si falla alguna, no empieces: di qué falta y propón cómo resolverlo. Esta lista también se usa al generar las iteraciones de una épica, para que nazcan preparadas.
+
+### 12.2 Terminado: antes de dejarla en revisión
 
 Un trabajo queda listo para revisión (`En revisión`) solo cuando:
 
@@ -131,6 +147,7 @@ Un trabajo queda listo para revisión (`En revisión`) solo cuando:
 
 ## 13. Cuándo detenerse y preguntar
 
+- La iteración no cumple la definición de preparada (sección 12.1).
 - Falta un dato del cliente que bloquea la tarea.
 - La tarea contradice una RDA, una especificación aprobada, el contrato de la API, `DESIGN.md` o el alcance.
 - Una funcionalidad importante no tiene requisitos claros, o su especificación está en `Borrador`.

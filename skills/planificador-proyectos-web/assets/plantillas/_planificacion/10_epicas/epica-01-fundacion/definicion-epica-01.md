@@ -19,4 +19,4 @@
 
 ## Revisión al cierre
 
-Se completa al cerrar la épica, en pocas líneas: si se cumplió el criterio de término, qué se aprendió y qué cambia en el backlog o en las épicas siguientes.
+Se completa al cerrar la épica, en pocas líneas: si se cumplió el criterio de término, qué se aprendió y qué cambia en el backlog o en las épicas siguientes. Después se proponen las iteraciones de la épica siguiente (sección 4.4 de `_planificacion/README.md`).
