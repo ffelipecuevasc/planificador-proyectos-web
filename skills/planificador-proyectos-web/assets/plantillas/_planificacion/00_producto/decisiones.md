@@ -1,6 +1,6 @@
 # Registro de Decisiones Arquitectónicas (RDA)
 
-Consolidado de las decisiones técnicas del proyecto. Formato y reglas en `_planificacion/README.md` (secciones 5.2 y 6.4).
+Consolidado de las decisiones técnicas del proyecto. Reglas en `_planificacion/README.md` (sección 5.3) y plantilla en `_planificacion/plantillas/rda.md`.
 
 | RDA | Título | Estado |
 | :-- | :----- | :----- |

@@ -68,7 +68,8 @@ Si es tu primera vez, sigue estos pasos y vuelve al resto del documento cuando t
 | :------------- | :-------- |
 | Claude (web, escritorio o móvil) | Cualquier plan, incluido el gratuito, con la **ejecución de código activada**. En planes individuales se activa en *Settings → Capabilities*; en Team y Enterprise la activa la organización. |
 | Claude Code | Un plan de pago (Pro, Max, Team o Enterprise) o acceso por API. |
-| El validador | Python 3. Dentro de Claude ya está disponible; solo lo necesitas instalado en tu computador si quieres ejecutarlo a mano. No requiere librerías adicionales. |
+| El validador y el script de `.claude/` | Python 3. Dentro de Claude ya está disponible; solo lo necesitas instalado en tu computador si quieres ejecutarlos a mano. No requieren librerías adicionales. |
+| Los hooks del proyecto generado | `sh`, que ya existe en macOS y Linux. En Windows, Git Bash, que viene con [Git para Windows](https://git-scm.com/downloads/win): Claude Code lo usa para ejecutar los hooks. |
 
 Planes y menús verificados en octubre de 2026 en [support.claude.com](https://support.claude.com/en/articles/12512180-using-skills-with-claude) y [claude.com/pricing](https://claude.com/pricing). Estos productos cambian seguido: si algo no coincide, revisa esas páginas.
 
@@ -139,6 +140,12 @@ Estos pedidos se hacen en Claude Code, porque el agente necesita leer y modifica
 
 > Planifica la siguiente épica. (En Claude Code también sirve el comando `/siguiente-epica`).
 
+> Ejecuta la iteración 02-03. (En Claude Code también sirve `/iteracion 02-03`).
+
+> Audita la épica 02 antes de cerrarla. (En Claude Code, `/auditar-epica 02`, idealmente en una sesión nueva).
+
+> Este proyecto lo documenté con la versión anterior de la skill. Migrémoslo a la estructura nueva.
+
 ---
 
 ## 6. Cómo funciona
@@ -175,7 +182,9 @@ Cuando el repositorio ya tiene `AGENTS.md` y la carpeta `_planificacion/`, la sk
 
 - **Funcionalidad nueva:** se agrega a la lista de pendientes ▸ se especifica, si lo justifica ▸ se planifica una etapa de trabajo con sus tareas ▸ se programa ▸ se comprueba contra los criterios de aceptación.
 - **Cambio o corrección:** se clasifica como *menor* o *significativo*. Es menor si la especificación sigue siendo correcta: no se toca y se corrige el código. Es significativo si cambia el comportamiento, la API o la arquitectura: primero se actualiza la especificación y después el código.
-- **Cierre de épica:** al terminar la última etapa de una épica, el agente revisa cómo le fue, te propone la lista de etapas de la épica siguiente (nombre y objetivo de cada una) y, cuando la apruebas, las crea todas de una vez. Así no tienes que planificar etapa por etapa. Si la épica siguiente ya tenía etapas escritas, solo propone ajustes cuando algo cambió.
+- **Cierre de épica:** al terminar la última etapa de una épica, el agente escribe una bitácora de cierre (qué se logró, cómo se comprobó y qué se aprendió), revisa las etapas de la épica siguiente como lo haría un desarrollador senior experto en tu stack (buenas prácticas, patrones adecuados, pruebas, seguridad y sin complicar de más), te propone la lista con nombre y objetivo de cada una y, cuando la apruebas, las crea todas de una vez. Así no tienes que planificar etapa por etapa. Si la épica siguiente ya tenía etapas escritas, solo propone ajustes cuando algo cambió.
+- **Auditoría de una épica** (desde nivel mediano): antes de cerrarla, una revisión hecha en una sesión nueva comprueba con mediciones reales que lo marcado como cumplido realmente lo esté.
+- **Migración:** si el proyecto se documentó con una versión anterior de la skill, te propone pasarlo a la estructura actual y lo hace solo si aceptas.
 - **Nuevo diagnóstico:** si el proyecto creció o se simplificó (por ejemplo, ahora tiene inicio de sesión), la skill propone un nivel nuevo y tú decides.
 
 ---
@@ -191,7 +200,8 @@ El nivel decide cuánta documentación se genera. Un CV online no necesita lo mi
 | **Especificaciones** | No: cada etapa lleva su objetivo y criterios | Para cada funcionalidad con reglas o lógica propia | Para cada funcionalidad, con escenarios y [casos borde](#14-glosario) |
 | **Plan técnico** | Opcional | Cuando la etapa toca la arquitectura, los datos o la API | Siempre |
 | **Contrato OpenAPI** (API REST) | Recomendado | Obligatorio | Obligatorio y detallado |
-| **Auditoría técnica** | Solo si hay algo que revisar | Sí | Sí |
+| **Auditorías** | Solo si hay algo que revisar | Sí, con el comando `/auditar-epica` | Sí, una por épica antes de cerrarla |
+| **Línea base de producción** | Solo si la pides | Si el proyecto ya está publicado y se va a corregir u optimizar | Lo mismo |
 | **Comprobación obligatoria** | Que compile, que se ejecute y que cumpla los criterios de aceptación | Lo mismo, más pruebas de la API | Lo mismo |
 
 Las demás pruebas (unitarias, E2E, cobertura, contract testing; ver el [glosario](#14-glosario)) se recomiendan según el riesgo del proyecto, pero nunca se imponen. Solo pasan a ser obligatorias si tú lo decides.
@@ -207,27 +217,38 @@ Las demás pruebas (unitarias, E2E, cobertura, contract testing; ver el [glosari
 ├── README.md                     Presentación del proyecto para quien llega al repositorio
 ├── .claude/
 │   ├── settings.json             Permisos de Claude Code: qué hace solo, qué consulta, qué tiene prohibido
-│   ├── README.md                 Explicación de cada permiso
-│   └── commands/                 El comando /siguiente-epica para Claude Code
+│   ├── README.md                 Explicación de cada permiso, hook y comando
+│   ├── commands/                 Los comandos /siguiente-epica, /iteracion y /auditar-epica
+│   └── hooks/                    Protección de secretos y lista cerrada de documentos
 ├── docs/api/openapi.yaml         Contrato de la API REST (según el nivel)
 └── _planificacion/
     ├── README.md                 Guía de la carpeta y de cómo se trabaja
+    ├── plantillas/               Plantillas de los documentos que se repiten (etapa, bitácora, auditoría…)
     ├── 00_producto/
     │   ├── producto.md           Qué es el proyecto, para quién y qué NO es
     │   ├── registro-pendientes.md   Lista de pendientes y estado del trabajo
     │   ├── decisiones.md         Registro de Decisiones Arquitectónicas (RDA)
-    │   └── auditoria-tecnica.md  Revisiones técnicas y hallazgos (según el nivel)
-    ├── 10_epicas/                Bloques grandes de trabajo y sus etapas (y la Épica 00 si el proyecto ya tenía código)
-    ├── 20_especificaciones/      Especificaciones por funcionalidad (desde nivel mediano)
-    └── 99_bitacora/              Qué se hizo, cómo se comprobó y qué se aprendió
+    │   ├── auditoria-tecnica.md  Índice de auditorías y estado de sus hallazgos (según el nivel)
+    │   └── auditorias/           Cada auditoría completa
+    ├── 10_epicas/
+    │   └── epica-01-<nombre>/    Definición, etapas y la carpeta bitacoras/ con lo que se hizo
+    └── 20_especificaciones/      Especificaciones por funcionalidad (desde nivel mediano)
 ```
+
+Algunos documentos aparecen solo cuando hacen falta: el archivo del registro (cuando crece), las propuestas de cambio a los documentos protegidos y la línea base de producción. Si el proyecto ya tenía código, también existe la Épica 00 · Línea base.
 
 Los documentos son de dos tipos, con reglas distintas. En los archivos internos de la skill y en los mensajes del validador, los protegidos aparecen con el nombre técnico de *inmutables*.
 
 | Tipo | Archivos | Quién los edita | Regla |
 | :--- | :------- | :-------------- | :---- |
-| **Protegidos** | `AGENTS.md`, `DESIGN.md`, `README.md`, `_planificacion/README.md` | Solo tú. El agente puede proponerte cambios, pero no aplicarlos | Describen cómo es el proyecto hoy: sin fechas ni historial |
+| **Protegidos** | `AGENTS.md`, `DESIGN.md`, `README.md`, `_planificacion/README.md`, `_planificacion/plantillas/` y `.claude/` | Solo tú. El agente te deja sus propuestas en un archivo de propuestas, con el texto actual, el nuevo y la razón | Describen cómo es el proyecto hoy: sin fechas ni historial |
 | **Vivos** | Registro de pendientes, decisiones, auditorías, especificaciones, OpenAPI, épicas, etapas y bitácoras | El agente, siguiendo las reglas de `_planificacion/README.md` | Llevan fechas y estados. Cada dato se escribe en un solo lugar, para que no haya dos versiones distintas |
+
+### Protecciones para el agente
+
+- **Secretos.** El agente no puede leer, buscar ni editar `.env` y sus variantes, llaves privadas ni archivos de credenciales. `.env.example` sí puede leerlo, porque se publica sin secretos. Lo impiden los permisos y un [hook](#14-glosario) que revisa también los comandos de la terminal.
+- **Lista cerrada de documentos.** Solo pueden existir los archivos `.md` de la lista del proyecto. El agente no puede crear otros por su cuenta, como un registro de los prompts que ejecutó o notas de sesión: si cree que falta un documento, te lo propone. Lo refuerzan cuatro capas: `AGENTS.md`, los permisos, un hook que bloquea la creación y el validador.
+- **Estándares de calidad.** `AGENTS.md` le pide trabajar como un desarrollador senior experto en tu stack, con buenas prácticas y patrones adecuados, pero sin sobreingeniería.
 
 ### Etapas de tamaño revisable
 
@@ -253,11 +274,13 @@ El segundo se puede comprobar con un sí o un no. El primero no, y el validador 
 2. Abre `_planificacion/00_producto/registro-pendientes.md` y revisa los datos marcados como `PENDIENTE_CLIENTE` (información que debe dar quien encarga el proyecto; si el proyecto es tuyo, eres tú) y `PENDIENTE_DESARROLLADOR` (decisiones técnicas que te tocan a ti). Resuelve los que bloquean la primera etapa.
 3. Si la etapa incluye una especificación, léela. Si estás de acuerdo, cambia el campo **Estado**, al inicio del archivo, de `Borrador` a `Aprobada`. El agente no programa nada que siga en `Borrador`.
 4. En `registro-pendientes.md`, marca la iteración como `En curso` (o pídele al agente que lo haga). Su nombre aparece en el campo **Iteración activa** al inicio de ese archivo.
-5. Pídele al agente: «Ejecuta la iteración activa». El agente leerá el registro, la etapa y su especificación, programará, comprobará el resultado, escribirá la bitácora y dejará la etapa `En revisión`, con un mensaje de commit sugerido.
+5. Pídele al agente: «Ejecuta la iteración activa» (en Claude Code, `/iteracion`). El agente leerá el registro, la etapa y su especificación, programará, comprobará el resultado, escribirá la bitácora en la carpeta de la épica y dejará la etapa `En revisión`, con un mensaje de commit sugerido.
 6. Revisa lo que hizo, haz tú el commit y marca la etapa como `Terminada`.
-7. Cuando termine la última etapa de una épica, el agente te propondrá las etapas de la épica siguiente. Revisa la lista, ajústala si quieres y apruébala: el agente las crea todas. También puedes pedirlo cuando quieras con «Planifica la siguiente épica» o `/siguiente-epica`.
+7. Antes de cerrar una épica de nivel mediano o complejo, pide una auditoría en una sesión nueva (`/auditar-epica`).
+8. Cuando termine la última etapa de una épica, el agente escribirá la bitácora de cierre y te propondrá las etapas de la épica siguiente, revisadas como experto en tu stack. Revisa la lista, ajústala si quieres y apruébala: el agente las crea todas. También puedes pedirlo cuando quieras con «Planifica la siguiente épica» o `/siguiente-epica`.
+9. La primera vez, comprueba que los hooks funcionan en tu equipo con la «Prueba rápida» de `.claude/README.md`.
 
-> ◆ **El agente nunca hace commits, push, merges ni despliegues.** Los permisos de `.claude/settings.json` se lo impiden, y `AGENTS.md` le explica por qué. Esos pasos siempre quedan en tus manos.
+> ◆ **El agente nunca hace commits, push, merges ni despliegues.** Los permisos de `.claude/settings.json` se lo impiden (también desde PowerShell), y `AGENTS.md` le explica por qué. Esos pasos siempre quedan en tus manos.
 
 ---
 
@@ -283,8 +306,8 @@ En Windows, usa `python` o `py` en lugar de `python3`.
 
 El validador entrega dos tipos de resultados:
 
-- **Errores**, que impiden la entrega hasta que se corrijan: faltan archivos que el nivel exige; hay nombres con tildes o que no siguen la convención; `settings.json` está mal escrito o tiene reglas que se contradicen; quedaron partes de la plantilla sin completar; el `README.md` del proyecto incluye bloques de código o comandos (ese archivo es una presentación, no un manual técnico; solo se admite un bloque `text` para el árbol de carpetas); el registro no tiene lista de pendientes; hay etapas o especificaciones sin criterios de aceptación; una API REST de nivel mediano o complejo no tiene contrato; o hay datos pendientes que no quedaron registrados.
-- **Avisos**, para que los revises uno por uno: fechas o referencias al pasado en los documentos protegidos; criterios de aceptación vagos como «se ve bien» o «funciona correctamente»; etapas con más de 8 tareas; una Épica 00 mal armada; y si faltan la definición de preparada en `AGENTS.md` o el comando `/siguiente-epica`.
+- **Errores**, que impiden la entrega hasta que se corrijan: faltan archivos que el nivel exige (incluidos los de `.claude/` y las plantillas internas); hay nombres con tildes o que no siguen la convención; hay archivos `.md` que no están en la lista de documentos permitidos; queda la carpeta `99_bitacora/` de la estructura anterior; `settings.json` está mal escrito, no registra los hooks o tiene reglas que se contradicen; los hooks no bloquean lo que deben en sus pruebas automáticas; quedaron partes de la plantilla sin completar; el `README.md` del proyecto incluye bloques de código o comandos (ese archivo es una presentación, no un manual técnico; solo se admite un bloque `text` para el árbol de carpetas); el registro no tiene lista de pendientes; hay etapas o especificaciones sin criterios de aceptación; una API REST de nivel mediano o complejo no tiene contrato; o hay datos pendientes que no quedaron registrados.
+- **Avisos**, para que los revises uno por uno: fechas o referencias al pasado en los documentos protegidos; criterios de aceptación vagos como «se ve bien» o «funciona correctamente»; etapas con más de 8 tareas; una Épica 00 mal armada; épicas sin carpeta `bitacoras/`; y si faltan en `AGENTS.md` la definición de preparada, los documentos permitidos o los estándares de calidad.
 
 ---
 
@@ -296,7 +319,9 @@ Si quieres que tus propias convenciones se usen siempre, edita la sección «Con
 
 **Stack y permisos.** La recomendación de stack que da la skill sale de `references/stacks.md`: frontend con Astro, Tailwind y PNPM, y backend según el tipo de proyecto (Python con Django o FastAPI para sistemas modulares que deben salir rápido o sumar IA; Java con Spring Boot o Quarkus cuando la seguridad es crítica; Node.js con Express para backends pequeños). Es solo una recomendación: manda el stack que tú elijas, y puedes editar esos criterios.
 
-Los permisos de `settings.json` se arman con `scripts/combinar_permisos.py` a partir de fragmentos por stack (`assets/permisos/`): `astro-pnpm`, `django`, `fastapi`, `spring`, `quarkus` y `express-pnpm`. Si usas otro stack, copia el fragmento más parecido y cambia sus comandos.
+**Estándares de calidad.** Lo que el agente revisa como desarrollador senior de cada stack está en las fichas de `references/stacks.md` («Estándares del experto»). Puedes ajustarlos a tu forma de trabajar.
+
+**La carpeta `.claude/`** se arma con `scripts/preparar_claude.py`: permisos a partir de fragmentos por stack (`assets/permisos/`: `astro-pnpm`, `django`, `fastapi`, `spring`, `quarkus` y `express-pnpm`), hooks, comandos, lista de documentos permitidos y un README con la razón de cada regla, que sale del campo `razones` de cada fragmento. Si usas otro stack, copia el fragmento más parecido y cambia sus comandos y razones. Si tus proyectos tienen archivos de secretos con otro nombre, agrégalos a `es_secreto()` en `assets/plantillas/claude/hooks/proteger-secretos.sh`.
 
 ---
 
@@ -313,7 +338,7 @@ Esta sección resume qué se tomó de cada metodología y dónde quedó. No es n
 | Contexto duradero para el agente | SDD | `AGENTS.md`, decisiones (RDA), `DESIGN.md` |
 | Backlog priorizado | Scrum | Sección «Backlog» de `registro-pendientes.md` |
 | Iteraciones con objetivo y entregables | Scrum | `10_epicas/`, sin duración fija |
-| Revisión y aprendizaje al cerrar | Scrum (revisión y retrospectiva, simplificadas) | Sección «Revisión» de cada bitácora y «Revisión al cierre» de cada épica |
+| Revisión y aprendizaje al cerrar | Scrum (revisión y retrospectiva, simplificadas) | Sección «Revisión» de cada bitácora y bitácora de cierre de cada épica |
 | Definición de terminado breve | Scrum | `AGENTS.md`, separada de los criterios de aceptación |
 | Definición de preparada | Scrum (*Definition of Ready*) | `AGENTS.md`: se revisa al crear cada iteración y antes de empezarla |
 | Planificación de lo siguiente | Scrum (Sprint Planning, simplificado) | Al cerrar cada épica se proponen y crean juntas las iteraciones de la siguiente |
@@ -337,7 +362,13 @@ Solo si tu proyecto expone una API REST y su nivel es mediano o complejo. En niv
 > ◆ **Importante.** Si creas un `CLAUDE.md` o un `CLAUDE.local.md` en el proyecto, Claude Code deja de leer `AGENTS.md` en su modo por defecto. Si necesitas uno de esos archivos, escribe `@AGENTS.md` en su primera línea.
 
 **¿El agente puede cambiar las reglas del proyecto?**
-No. Los cuatro documentos protegidos solo los editas tú. El agente te entrega una propuesta con el texto actual, el texto nuevo y la razón del cambio.
+No. Los documentos protegidos solo los editas tú. El agente deja su propuesta en `_planificacion/00_producto/propuestas-documentos-protegidos.md`, con el texto actual, el texto nuevo y la razón del cambio.
+
+**¿Qué pasa con mis proyectos documentados con una versión anterior?**
+Siguen funcionando como están. Si quieres la estructura nueva (bitácoras dentro de cada épica, hooks, plantillas internas), pídele a la skill que lo migre: te propone los pasos y mueve los archivos solo con tu aprobación.
+
+**¿Por qué los hooks están escritos en shell y no en Python o Node.js?**
+Porque ningún lenguaje está garantizado en todas las máquinas: un proyecto Java puede no tener Python ni Node.js. `sh` existe en macOS y Linux, y en Windows Claude Code ejecuta los hooks con Git Bash, que viene con Git. Además, ante cualquier error inesperado, los hooks bloquean la acción en vez de dejarla pasar.
 
 **¿Qué pasa si el diagnóstico de complejidad está mal?**
 Lo cambias. El diagnóstico es una propuesta y queda registrado como la primera decisión del proyecto (`RDA-001`). Si el proyecto cambia más adelante, se puede volver a diagnosticar.
@@ -366,6 +397,9 @@ Revisa el [glosario](#14-glosario). Y si algo de la entrevista no te queda claro
 | **Skill** | Un paquete de instrucciones y archivos que le enseña a Claude a hacer una tarea específica de una forma determinada. Esta skill le enseña a planificar proyectos web. |
 | **Contexto** | La información que el agente tiene a la vista mientras trabaja. Es limitado, por eso conviene que los documentos sean breves y estén en el repositorio. |
 | **Marcador de plantilla** | Un espacio por completar dentro de una plantilla, como `<nombre-del-proyecto>`. Si queda uno sin reemplazar, el validador lo detecta. |
+| **Hook** | Un pequeño programa que Claude Code ejecuta automáticamente antes de una acción, y que puede bloquearla. Aquí se usan para proteger los secretos y para impedir que el agente cree documentos que no están en la lista. |
+| **Comando** | Un atajo de Claude Code que se escribe con `/`, como `/iteracion 02-01`, y que dispara un procedimiento fijo. |
+| **Sobreingeniería** | Hacer una solución más compleja de lo que el problema necesita: capas, patrones o librerías que no resuelven nada real del proyecto. |
 
 ### Organización del trabajo
 
@@ -433,15 +467,17 @@ Revisa el [glosario](#14-glosario). Y si algo de la entrevista no te queda claro
         │   ├── proyecto-existente.md  Cómo analizar un proyecto que ya tiene código
         │   └── guia-documentos.md     Qué lleva cada documento y por qué
         ├── assets/
-        │   ├── plantillas/            Plantillas con la misma estructura que se entrega
+        │   ├── plantillas/            Plantillas con la misma estructura que se entrega (claude/ y gitkeep van sin punto)
         │   ├── permisos/              Fragmentos de permisos por stack
         │   └── linea-base/            Plantilla de la Épica 00
         └── scripts/
-            ├── validar_documentacion.py
-            └── combinar_permisos.py   Arma .claude/settings.json según el stack
+            ├── validar_documentacion.py  Revisa la documentación generada y prueba los hooks
+            └── preparar_claude.py     Arma .claude/: permisos, hooks, comandos y su README
 ```
 
 Este README está fuera de la carpeta de la skill a propósito: así no ocupa el contexto del agente ni se confunde con el `README.md` que la skill genera para cada proyecto.
+
+Las plantillas de `.claude/` y los archivos `.gitkeep` se guardan sin el punto inicial (`claude/`, `gitkeep`) porque muchas herramientas omiten los archivos ocultos al comprimir o sincronizar una skill; la skill les pone el punto al generar el proyecto.
 
 ---
 

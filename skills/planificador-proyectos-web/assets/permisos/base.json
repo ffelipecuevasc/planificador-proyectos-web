@@ -1,5 +1,5 @@
 {
-  "descripcion": "Reglas comunes a todo proyecto: Git, sistema de archivos, planificación, documentos protegidos, secretos y hosting.",
+  "descripcion": "Reglas comunes a todo proyecto: Git, sistema de archivos, documentos protegidos, secretos y hosting. La edición de _planificacion/ se genera desde documentos-permitidos.md.",
   "allow": {
     "git": [
       "Bash(git status)",
@@ -7,16 +7,11 @@
       "Bash(git diff)",
       "Bash(git diff *)",
       "Bash(git log *)",
-      "Bash(git show *)"
+      "Bash(git show *)",
+      "Bash(git blame *)"
     ],
     "sistema": [
       "Bash(ls *)"
-    ],
-    "edicion": [
-      "Edit(/_planificacion/00_producto/**)",
-      "Edit(/_planificacion/10_epicas/**)",
-      "Edit(/_planificacion/20_especificaciones/**)",
-      "Edit(/_planificacion/99_bitacora/**)"
     ]
   },
   "ask": {
@@ -36,7 +31,8 @@
     ],
     "edicion": [
       "Edit(/.gitignore)",
-      "Edit(/.gitattributes)"
+      "Edit(/.gitattributes)",
+      "Edit(/.env.example)"
     ]
   },
   "deny": {
@@ -57,13 +53,30 @@
       "Bash(git clean *)",
       "Bash(git remote *)",
       "Bash(git config *)",
+      "Bash(git apply *)",
+      "Bash(git update-index *)",
+      "Bash(git filter-branch *)",
+      "Bash(git filter-repo *)",
       "Bash(git branch -d *)",
       "Bash(git branch -D *)",
       "Bash(git branch --delete *)",
       "Bash(git -C *)",
       "Bash(gh pr merge *)",
       "Bash(gh repo *)",
-      "Bash(gh release *)"
+      "Bash(gh release *)",
+      "PowerShell(git commit *)",
+      "PowerShell(git push *)",
+      "PowerShell(git merge *)",
+      "PowerShell(git pull *)",
+      "PowerShell(git rebase *)",
+      "PowerShell(git cherry-pick *)",
+      "PowerShell(git revert *)",
+      "PowerShell(git reset *)",
+      "PowerShell(git tag *)",
+      "PowerShell(git clean *)",
+      "PowerShell(git apply *)",
+      "PowerShell(git filter-branch *)",
+      "PowerShell(git filter-repo *)"
     ],
     "sistema": [
       "Bash(sudo *)",
@@ -84,15 +97,50 @@
       "Edit(/AGENTS.md)",
       "Edit(/DESIGN.md)",
       "Edit(/README.md)",
+      "Edit(/CLAUDE.md)",
+      "Edit(/CLAUDE.local.md)",
       "Edit(/_planificacion/README.md)",
+      "Edit(/_planificacion/plantillas/**)",
       "Edit(/.claude/**)",
       "Edit(/.git/**)",
-      "Edit(/.env)",
-      "Edit(/.env.*)"
+      "Edit(**/.env)",
+      "Edit(**/.env.local)",
+      "Edit(**/.env.*.local)",
+      "Edit(**/.env.development)",
+      "Edit(**/.env.production)",
+      "Edit(**/.env.staging)",
+      "Edit(**/.env.test)",
+      "Edit(**/.dev.vars)"
     ],
     "lectura": [
-      "Read(./.env)",
-      "Read(./.env.*)"
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.*.local)",
+      "Read(**/.env.development)",
+      "Read(**/.env.production)",
+      "Read(**/.env.staging)",
+      "Read(**/.env.test)",
+      "Read(**/.dev.vars)",
+      "Read(**/*.pem)",
+      "Read(**/id_rsa*)",
+      "Read(**/id_ed25519*)"
     ]
+  },
+  "razones": {
+    "allow": {
+      "git": "Leer el estado y el historial es necesario para entender el código y no cambia nada.",
+      "sistema": "Listar carpetas no modifica el repositorio."
+    },
+    "ask": {
+      "git": "Crear o cambiar de rama, preparar cambios o descartarlos los aprueba el desarrollador: las ramas siguen la convención del proyecto y `checkout` o `restore` pueden perder trabajo sin guardar.",
+      "sistema": "Mover o borrar archivos requiere aprobación porque puede romper referencias o perder trabajo.",
+      "edicion": "`.gitignore`, `.gitattributes` y `.env.example` se versionan y afectan a todo el equipo. `.env.example` no lleva secretos reales, por eso se puede leer y editar con consulta."
+    },
+    "deny": {
+      "git": "Publicar, fusionar, etiquetar o reescribir el historial lo hace solo el desarrollador. Las reglas con `PowerShell(...)` repiten las de Git porque en Windows Claude Code puede usar PowerShell en vez de Bash. `git -C` se bloquea porque permite ejecutar Git en otra carpeta y saltarse estas reglas; `gh` repite las mismas operaciones desde la CLI de GitHub.",
+      "sistema": "`sudo`, el borrado recursivo y las herramientas de hosting y nube tocan el sistema o producción: el agente nunca despliega.",
+      "edicion": "Los documentos protegidos, las plantillas internas, `.claude/` y `.git/` los mantiene el desarrollador. `CLAUDE.md` y `CLAUDE.local.md` no se crean porque harían que Claude Code dejara de leer `AGENTS.md`. Los archivos de secretos (`.env` y sus variantes, `.dev.vars`) nunca se editan.",
+      "lectura": "Los archivos de secretos y las llaves privadas no se leen. Se enumeran las variantes de `.env` en vez de usar `.env.*` para que `.env.example`, que se versiona sin secretos, siga legible. El hook `proteger-secretos.sh` cubre el resto de las variantes."
+    }
   }
 }

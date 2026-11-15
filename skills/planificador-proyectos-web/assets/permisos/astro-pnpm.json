@@ -69,5 +69,19 @@
       "Bash(npx vercel *)",
       "Bash(npx netlify-cli *)"
     ]
+  },
+  "razones": {
+    "allow": {
+      "comandos": "Comandos de desarrollo, compilación, revisión, formato y pruebas de cada iteración; no cambian dependencias.",
+      "edicion": "`src/` y `public/` son las carpetas de trabajo del sitio.",
+      "web": "Documentación oficial del stack, de solo lectura."
+    },
+    "ask": {
+      "comandos": "Agregar, quitar o actualizar dependencias cambia el archivo de bloqueo y el peso del sitio; `pnpm dlx` y `npx` ejecutan paquetes descargados en el momento.",
+      "edicion": "Archivos de configuración: un error en ellos rompe la compilación o el despliegue."
+    },
+    "deny": {
+      "comandos": "El único gestor es PNPM: `npm` y `yarn` generan otro archivo de bloqueo. Publicar paquetes y las CLI de hosting (también vía `pnpm dlx` o `npx`) quedan fuera del alcance del agente."
+    }
   }
 }

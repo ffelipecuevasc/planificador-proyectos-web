@@ -32,6 +32,6 @@ No tiene. Este trabajo se hizo antes de adoptar la documentación y no se recons
 
 ## Revisión al cierre
 
-- **Hallazgos de la revisión inicial:** Auditoría 01 en `auditoria-tecnica.md`.
+- **Hallazgos de la revisión inicial:** Auditoría 01, en `00_producto/auditorias/auditoria-01.md` (índice en `auditoria-tecnica.md`).
 - **Qué entra al backlog:** lo que está a medio hacer y los hallazgos de severidad Alta y Media.
 - **Primera épica planificada:** {{EPICA_01_Y_POR_QUE}}

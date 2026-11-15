@@ -49,19 +49,20 @@ Si el desarrollador cambia el nivel o un componente, no discutas: ajusta, y si v
 | Componente | Pequeño | Mediano | Complejo |
 | :--------- | :------ | :------ | :------- |
 | Entrevista | Bloque 1 y lo esencial del 2 | Completa | Completa, con detalle de riesgos e integraciones |
-| `AGENTS.md`, `README.md`, `.claude/` | Sí; `AGENTS.md` corto | Sí | Sí |
+| `AGENTS.md`, `README.md`, `.claude/` (permisos, hooks y comandos `/siguiente-epica` e `/iteracion`) | Sí; `AGENTS.md` corto | Sí | Sí |
 | `DESIGN.md` (si hay interfaz) | Versión breve: concepto, color con contraste, tipografía y componentes clave | Completo | Completo |
 | `_planificacion/README.md` | Compacto: solo las reglas de los componentes activos | Completo | Completo |
 | `producto.md` | Breve | Sí | Sí |
 | Backlog (en `registro-pendientes.md`) | Lista mínima | Priorizado | Priorizado, con dependencias entre elementos |
 | `decisiones.md` (RDA) | Solo `RDA-001` y las decisiones estructurales iniciales | Sí | Sí, con seguimiento activo de reemplazos |
-| `auditoria-tecnica.md` | Solo si hay insumos que auditar | Sí | Sí |
+| Auditorías (`auditoria-tecnica.md` como índice y `auditorias/`, con el comando `/auditar-epica`) | Solo si hay insumos que auditar | Sí | Sí, con auditoría de cada épica antes de cerrarla |
 | Especificaciones (`20_especificaciones/`) | No: cada iteración lleva su descripción breve y sus criterios | Para cada funcionalidad con lógica o reglas de negocio | Para cada funcionalidad, más completas (escenarios y casos borde) |
 | Plan técnico en la iteración | Opcional | Cuando la iteración toca arquitectura, datos, API o integraciones | Siempre, con dependencias entre tareas |
-| Revisión al cerrar | Una o dos líneas en la bitácora | Sección «Revisión» de la bitácora | Bitácora y revisión al cierre de cada épica |
+| Revisión al cerrar | Una o dos líneas en la bitácora; bitácora de cierre breve | Sección «Revisión» de la bitácora y bitácora de cierre de cada épica | Lo mismo, con hallazgos abiertos y criterio de término medidos |
 | Contrato OpenAPI (si expone una API REST) | Recomendado; las rutas pueden ir en la iteración | Obligatorio | Obligatorio y detallado (ejemplos, esquemas de error, seguridad) |
 | Verificación obligatoria | Compilación, ejecución y criterios de aceptación | Lo mismo, más pruebas de API pertinentes si hay API REST | Lo mismo |
 | Verificaciones recomendadas | Solo si el riesgo lo pide | Pruebas automatizadas de la lógica de negocio y de las rutas | Además, las que el riesgo justifique (contract testing, carga, seguridad), propuestas con una RDA |
+| Línea base de producción | Solo si el desarrollador la pide | Si el proyecto ya está en producción y se va a corregir u optimizar | Lo mismo |
 
 Las recomendaciones se escriben como recomendaciones. Una verificación pasa a ser obligatoria solo si el desarrollador lo decide, y entonces se agrega a la «Definición de terminado» de `AGENTS.md`.
 

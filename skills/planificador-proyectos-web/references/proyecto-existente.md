@@ -57,14 +57,14 @@ Carpeta `_planificacion/10_epicas/epica-00-linea-base/` con un solo archivo, `de
 
 - Estado `Terminada` desde el inicio.
 - Describe lo que ya existe: funcionalidades o módulos, su estado observado y dónde están en el código; stack detectado y de dónde se dedujo; lo que no se pudo verificar.
-- **No lleva iteraciones ni bitácoras**, ni carpeta en `99_bitacora/`: ese trabajo se hizo antes de adoptar la documentación y no se reconstruye.
+- **No lleva iteraciones ni bitácoras**, ni carpeta `bitacoras/`: ese trabajo se hizo antes de adoptar la documentación y no se reconstruye.
 - No se modifica después. Si más adelante se descubre que algo de la línea base no funcionaba, eso es una corrección o un hallazgo, no una edición de la Épica 00.
 
 Las épicas planificadas empiezan en `epica-01-…`. En el registro, la tabla de estado lleva una primera fila para la línea base (`00 | Línea base | 00 | Terminada | — | —`).
 
 ### Auditoría 01 · Revisión inicial del código
 
-En `auditoria-tecnica.md`, aunque el proyecto sea de nivel pequeño (hay un insumo que auditar). Alcance: el código entregado, con su fecha o commit. Cada hallazgo dice dónde está (archivo o carpeta) y es comprobable. Áreas típicas: seguridad (secretos versionados, dependencias con vulnerabilidades conocidas, validación de entradas), dependencias desactualizadas o abandonadas, pruebas ausentes, accesibilidad y rendimiento si hay interfaz, código muerto o duplicado, configuración de despliegue. No audites con opiniones de estilo: un hallazgo tiene una consecuencia concreta.
+En `00_producto/auditorias/auditoria-01.md`, con la plantilla de auditoría, y sus hallazgos en el índice `auditoria-tecnica.md`, aunque el proyecto sea de nivel pequeño (hay un insumo que auditar; en ese caso, prepara `.claude/` con `--auditoria`). Alcance: el código entregado, con su fecha o commit. Cada hallazgo dice dónde está (archivo o carpeta) y es comprobable. Áreas típicas: seguridad (secretos versionados, dependencias con vulnerabilidades conocidas, validación de entradas), dependencias desactualizadas o abandonadas, pruebas ausentes, accesibilidad y rendimiento si hay interfaz, código muerto o duplicado, configuración de despliegue. No audites con opiniones de estilo: un hallazgo tiene una consecuencia concreta.
 
 ### Backlog y épicas
 
@@ -72,6 +72,10 @@ En `auditoria-tecnica.md`, aunque el proyecto sea de nivel pequeño (hay un insu
 - Los hallazgos de severidad Alta y Media entran al backlog como `Técnico` o `Corrección`, con el ID del hallazgo en la columna «Elemento».
 - Lo que el desarrollador quiere construir de aquí en adelante sale de la entrevista.
 - La primera épica suele ser de estabilización (cerrar los hallazgos Altos, agregar las pruebas y la verificación mínimas) antes de seguir con funcionalidades. Propónla así si los hallazgos lo justifican, y explica por qué.
+
+### Línea base de producción
+
+Si el proyecto ya está publicado y el trabajo que viene es corregir u optimizar, propón medir primero sus cifras reales (tiempos, tamaños, volúmenes, errores) en `00_producto/linea-base-produccion.md`, para comparar después cada mejora. Se activa con el visto bueno del desarrollador y `--linea-base-produccion` al preparar `.claude/`. La medición suele ser la primera iteración de la épica de estabilización.
 
 ### RDA
 

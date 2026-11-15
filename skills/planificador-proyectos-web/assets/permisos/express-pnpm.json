@@ -76,5 +76,19 @@
       "Bash(mysql *)",
       "Bash(mongosh *)"
     ]
+  },
+  "razones": {
+    "allow": {
+      "comandos": "Comandos de desarrollo, compilación, revisión, formato y pruebas.",
+      "edicion": "Código fuente y pruebas.",
+      "web": "Documentación oficial de Express, Node.js y MDN."
+    },
+    "ask": {
+      "comandos": "Dependencias y migraciones locales cambian el archivo de bloqueo o la base de datos.",
+      "edicion": "Archivos de configuración del proyecto."
+    },
+    "deny": {
+      "comandos": "Otros gestores de paquetes, publicación, CLI de hosting y migraciones contra la base remota."
+    }
   }
 }

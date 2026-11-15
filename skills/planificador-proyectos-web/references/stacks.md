@@ -1,6 +1,6 @@
 # Stacks: recomendación, reglas y permisos
 
-Cómo se elige el stack en la entrevista (los criterios de la sección 2 son los que trae la skill: puedes editarlos para dejar los tuyos), qué reglas técnicas y comandos lleva cada uno a `AGENTS.md` y cómo se arma `.claude/settings.json` con los fragmentos de `assets/permisos/`.
+Cómo se elige el stack en la entrevista (los criterios de la sección 2 son los que trae la skill: puedes editarlos para dejar los tuyos), qué reglas técnicas, estándares de calidad y comandos lleva cada uno a `AGENTS.md` y cómo se arma `.claude/` con `scripts/preparar_claude.py`.
 
 ## Índice
 
@@ -9,7 +9,7 @@ Cómo se elige el stack en la entrevista (los criterios de la sección 2 son los
 3. Experiencia del desarrollador y riesgo
 4. Fichas por stack
 5. Proyectos fullstack y monorrepos
-6. Armar `settings.json`
+6. Armar `.claude/`
 
 ---
 
@@ -69,18 +69,22 @@ Si lo que recomiendas por tipo de proyecto choca con la experiencia del desarrol
 
 ## 4. Fichas por stack
 
-Cada ficha dice qué va a `AGENTS.md` (comandos y reglas técnicas típicas), qué entra en la definición de terminado y qué fragmento de permisos usa. Los comandos exactos se confirman con el desarrollador o se leen de los archivos del proyecto (`package.json`, `pyproject.toml`, `pom.xml`): no inventes scripts que el proyecto no tiene.
+Cada ficha dice qué va a `AGENTS.md` (comandos, reglas técnicas típicas y estándares del experto), qué entra en la definición de terminado y qué fragmento de permisos usa. Los comandos exactos se confirman con el desarrollador o se leen de los archivos del proyecto (`package.json`, `pyproject.toml`, `pom.xml`): no inventes scripts que el proyecto no tiene.
+
+**Estándares del experto.** Van a la sección «Estándares de calidad» de `AGENTS.md`, bajo «Del stack», y `{{STACK_EXPERTO}}` se llena con el stack del proyecto (por ejemplo, «Java y Spring Boot» o «Astro, Tailwind CSS y TypeScript»). Son lo que un desarrollador senior de ese ecosistema revisaría en un pull request: los aplica el agente al implementar, y el comando `/siguiente-epica` los usa para revisar las iteraciones antes de proponerlas. Se adaptan al nivel del proyecto: en uno pequeño, se dejan los que tienen sentido y se omiten los que llevarían a sobreingeniería. En un fullstack van los de cada pieza, con un subtítulo por carpeta.
 
 ### Astro, Tailwind y PNPM · `astro-pnpm`
 
 - **Comandos típicos:** `pnpm dev`, `pnpm build`, `pnpm preview`, `pnpm astro check`, `pnpm format`.
 - **Reglas técnicas:** las de frontend de `tipos-proyecto.md`, más: componentes `.astro` por defecto y una isla interactiva solo con justificación; tokens de `DESIGN.md` en la configuración de Tailwind (o en `@theme`, según la versión), nunca valores sueltos en las clases; imágenes con el componente de imagen de Astro y dimensiones explícitas.
+- **Estándares del experto:** HTML semántico y un solo `h1` por página; componentes pequeños con props tipadas en TypeScript; JavaScript solo en las islas que lo necesitan, con la directiva de carga más tardía que funcione (`client:visible` o `client:idle` antes que `client:load`); contenido en colecciones con esquema cuando hay contenido repetido; accesibilidad AA (contraste, foco visible, textos alternativos, navegación con teclado); presupuesto de rendimiento (imágenes optimizadas, sin fuentes ni scripts que bloqueen el renderizado).
 - **Terminado:** `pnpm build` sin errores ni advertencias nuevas y `pnpm astro check` sin errores.
 
 ### Django · `django`
 
 - **Comandos típicos:** `python manage.py runserver`, `check`, `test`, `makemigrations`, `migrate` (local); con `uv`, antecedidos de `uv run`.
 - **Reglas técnicas:** una app de Django por módulo del negocio; lógica de negocio fuera de las vistas (en servicios o en los modelos); migraciones versionadas y nunca editadas una vez aplicadas; configuración sensible solo desde variables de entorno; `DEBUG` desactivado fuera de desarrollo.
+- **Estándares del experto:** vistas delgadas que delegan en servicios o en métodos de modelo; consultas sin N+1 (`select_related` y `prefetch_related`), con índices en los campos que se filtran; transacciones explícitas (`transaction.atomic`) en las operaciones que tocan varias tablas; formularios o serializadores para validar toda entrada; permisos comprobados en el servidor, nunca solo en la plantilla; pruebas de la lógica de negocio y del dinero antes que de la interfaz.
 - **Terminado:** `python manage.py check` sin errores, pruebas pertinentes en verde y migraciones creadas para todo cambio de modelo.
 - **Permisos:** `migrate` se consulta, porque depende de a qué base apunta el entorno; `flush` y `dbshell` están prohibidos.
 
@@ -88,6 +92,7 @@ Cada ficha dice qué va a `AGENTS.md` (comandos y reglas técnicas típicas), qu
 
 - **Comandos típicos:** `fastapi dev app/main.py` o `uvicorn app.main:app --reload`, `pytest`, `alembic revision --autogenerate` y `alembic upgrade head` (local).
 - **Reglas técnicas:** modelos de entrada y salida con Pydantic; rutas agrupadas por recurso con `APIRouter`; dependencias para autenticación y sesión de base de datos; el OpenAPI que genera FastAPI se compara con `docs/api/openapi.yaml`, que manda.
+- **Estándares del experto:** esquemas Pydantic separados para entrada, salida y persistencia; lógica de negocio en servicios, no en las rutas; inyección de dependencias para sesión, configuración y usuario actual; código asíncrono de punta a punta o síncrono de punta a punta, sin llamadas bloqueantes dentro de rutas `async`; errores con el formato común y códigos HTTP correctos; pruebas con el cliente de pruebas y una base aislada.
 - **Terminado:** `pytest` en verde y las pruebas de API pertinentes de `tipos-proyecto.md`.
 - **Permisos:** `alembic upgrade` y `downgrade` se consultan.
 
@@ -95,6 +100,7 @@ Cada ficha dice qué va a `AGENTS.md` (comandos y reglas técnicas típicas), qu
 
 - **Comandos típicos:** `./mvnw spring-boot:run`, `./mvnw test`, `./mvnw verify` (o `./gradlew bootRun`, `test`, `build`).
 - **Reglas técnicas:** capas separadas (controlador, servicio, repositorio); DTO en las fronteras, nunca entidades expuestas; validación con Bean Validation; seguridad con Spring Security y la regla de menor privilegio; migraciones con Flyway o Liquibase, nunca editadas una vez aplicadas; secretos fuera de `application.properties`.
+- **Estándares del experto:** principios SOLID aplicados con criterio; inyección por constructor, nunca por campo; transacciones en la capa de servicio (`@Transactional`) y no en el controlador; manejo de errores central con `@RestControllerAdvice`; consultas sin N+1 (`fetch join` o grafos de entidad) y paginación en las listas; inmutabilidad en los DTO (`record`); pruebas unitarias con JUnit 5 y Mockito para los servicios y pruebas de integración con `@SpringBootTest` o *slices* para lo que toca la base.
 - **Terminado:** `./mvnw verify` (o `./gradlew build`) sin errores.
 - **Permisos:** editar `application*` y las migraciones se consulta; `deploy`, `release` y la limpieza de la base están prohibidos.
 
@@ -102,6 +108,7 @@ Cada ficha dice qué va a `AGENTS.md` (comandos y reglas técnicas típicas), qu
 
 - **Comandos típicos:** `./mvnw quarkus:dev`, `./mvnw test`, `./mvnw package` (o `./gradlew quarkusDev`, `build`).
 - **Reglas técnicas:** las de Spring Boot adaptadas (recursos REST, servicios, Panache o repositorios); extensiones de Quarkus antes que librerías sueltas; configuración por perfiles (`%dev`, `%prod`).
+- **Estándares del experto:** los de Spring Boot adaptados a CDI (inyección por constructor, `@Transactional` en servicios, `ExceptionMapper` para errores); configuración tipada con `@ConfigMapping`; nada de reflexión que rompa la compilación nativa sin registrarla; pruebas con `@QuarkusTest` y Dev Services para la base.
 - **Terminado:** `./mvnw verify` (o `./gradlew build`) sin errores.
 - **Permisos:** `quarkus:deploy` y `quarkus:image-push` se consultan.
 
@@ -109,6 +116,7 @@ Cada ficha dice qué va a `AGENTS.md` (comandos y reglas técnicas típicas), qu
 
 - **Comandos típicos:** `pnpm dev`, `pnpm start`, `pnpm test`, `pnpm lint`.
 - **Reglas técnicas:** rutas, controladores y servicios separados aunque sean pocos archivos; validación de entradas en cada ruta; un manejador de errores central con el formato de error común; `helmet` y CORS configurados si la API es pública.
+- **Estándares del experto:** TypeScript estricto si el proyecto lo usa; validación de entradas con un esquema (por ejemplo, Zod) en cada ruta; errores asíncronos que llegan al manejador central; configuración leída y validada una sola vez al arrancar; sin lógica de negocio en los controladores; pruebas de rutas con una base o un servicio de prueba aislado.
 - **Terminado:** `pnpm test` en verde y las pruebas de API pertinentes.
 - **Permisos:** las migraciones contra la base remota (`prisma migrate deploy`, `drizzle-kit push`) están prohibidas.
 
@@ -119,20 +127,22 @@ La estructura por defecto de un fullstack es un monorrepo con dos carpetas: `fro
 - `AGENTS.md` dice en «Comandos» desde qué carpeta se ejecuta cada uno.
 - Con Django, pregunta si la interfaz va en Astro aparte (consume la API) o dentro del monolito (plantillas de Django con Tailwind). Lo segundo convierte el proyecto en uno solo, sin `frontend/`.
 
-## 6. Armar `settings.json`
+## 6. Armar `.claude/`
 
-No escribas `settings.json` a mano. Combínalo con el script, que parte de `base.json` (Git, sistema de archivos, planificación, documentos protegidos, secretos y hosting) y suma un fragmento por pieza del stack:
+No escribas `.claude/` a mano. Prepárala con el script, que parte de `base.json` (Git, sistema, documentos protegidos, secretos y hosting), suma un fragmento por pieza del stack, genera la edición sin consulta de los documentos de `_planificacion/` desde la lista de documentos permitidos, registra los hooks, copia los comandos según los componentes activos y escribe `.claude/README.md` con la razón de cada grupo de reglas:
 
 ```bash
 # Ver los fragmentos disponibles
-python scripts/combinar_permisos.py --listar
+python scripts/preparar_claude.py --listar
 
 # Un solo stack en la raíz
-python scripts/combinar_permisos.py --stack astro-pnpm --salida <dir>/.claude/settings.json
+python scripts/preparar_claude.py --proyecto <dir> --stack astro-pnpm --nivel pequeno
 
-# Monorrepo fullstack con API REST
-python scripts/combinar_permisos.py --stack astro-pnpm:frontend --stack django:backend \
-    --api-rest --salida <dir>/.claude/settings.json
+# Monorrepo fullstack con API REST, en producción, con un dominio que el agente no debe visitar
+python scripts/preparar_claude.py --proyecto <dir> --stack astro-pnpm:frontend --stack django:backend \
+    --api-rest --nivel complejo --linea-base-produccion --dominio-produccion app.ejemplo.cl
 ```
 
-Después, revisa el resultado contra el proyecto real: carpetas de código que el fragmento no conoce, scripts que el proyecto no tiene, archivos de configuración propios. Los criterios de qué va en `allow`, `ask` y `deny` están en `tipos-proyecto.md`, «Cómo adaptar `settings.json` al stack», y `.claude/README.md` explica cada grupo de reglas.
+Si `AGENTS.md` ya está escrito con el marcador `{{TABLA_DOCUMENTOS_PERMITIDOS}}`, el script lo reemplaza por la tabla. Usa `--auditoria` en un proyecto pequeño que igual tiene auditorías (por ejemplo, uno con código existente).
+
+Después, revisa el resultado contra el proyecto real: carpetas de código que el fragmento no conoce, scripts que el proyecto no tiene, archivos de configuración propios, carpetas de contenido en `.md` fuera de las zonas de documentación. Los criterios de qué va en `allow`, `ask` y `deny` están en `tipos-proyecto.md`, «Cómo adaptar `settings.json` al stack». Si cambias una regla a mano, actualiza también su fila en `.claude/README.md`.

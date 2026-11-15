@@ -84,5 +84,19 @@
       "Bash(mysql *)",
       "Bash(sqlplus *)"
     ]
+  },
+  "razones": {
+    "allow": {
+      "comandos": "Modo de desarrollo, compilación, pruebas y revisión de dependencias con el wrapper.",
+      "edicion": "Código fuente y pruebas.",
+      "web": "Documentación oficial de Quarkus y Java."
+    },
+    "ask": {
+      "comandos": "Maven o Gradle sin wrapper, migraciones, y despliegue o publicación de imágenes de Quarkus se aprueban antes.",
+      "edicion": "Archivos de construcción, `application*` y migraciones."
+    },
+    "deny": {
+      "comandos": "Desplegar, publicar versiones, limpiar la base de datos o abrir su consola."
+    }
   }
 }

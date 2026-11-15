@@ -8,23 +8,35 @@
 - **Entrega comprometida:** {{FECHA_ENTREGA}}
 - **Flujo de ramas vigente:** {{FLUJO_DE_RAMAS}}
 
+> Cada campo del encabezado ocupa una sola línea. El detalle va en las bitácoras y el historial, no aquí.
+
 ---
 
 ## 1. Estado de épicas e iteraciones
+
+Solo las épicas abiertas. Al cerrar una épica, sus filas pasan a `registro-archivo.md` y la épica queda resumida en la sección 2.
 
 | Iteración | Nombre | Épica | Estado | Depende de | Bitácoras |
 | :-------- | :----- | :---- | :----- | :--------- | :-------- |
 | 01-01 | {{NOMBRE}} | 01 | Pendiente | — | — |
 
-## 2. Backlog
+## 2. Épicas cerradas
 
-Lo comprometido que falta construir, ordenado por prioridad. Un elemento asignado a una iteración muestra su número; al cerrar la iteración se actualizan su fila y las de este backlog. Los terminados se quedan al final.
+Una fila por épica cerrada, con enlace a su bitácora de cierre.
+
+| Épica | Nombre | Cerrada | Bitácora de cierre |
+| :---- | :----- | :------ | :----------------- |
+| — | — | — | — |
+
+## 3. Backlog
+
+Lo comprometido que falta construir, ordenado por prioridad. Un elemento asignado a una iteración muestra su número; al cerrar la iteración se actualizan su fila y las de este backlog. Los terminados se quedan al final hasta que su épica se cierra; entonces pasan a `registro-archivo.md`.
 
 | Prioridad | Elemento | Tipo | Especificación | Iteración | Estado |
 | :-------- | :------- | :--- | :------------- | :-------- | :----- |
 | {{PRIORIDAD}} | {{ELEMENTO}} | {{FUNCIONALIDAD_MEJORA_CORRECCION_O_TECNICO}} | {{SPEC_O_GUION}} | {{ITERACION_O_GUION}} | Pendiente |
 
-## 3. Datos pendientes del cliente
+## 4. Datos pendientes del cliente
 
 Mientras falten, se usa `PENDIENTE_CLIENTE` donde corresponda.
 
@@ -32,7 +44,7 @@ Mientras falten, se usa `PENDIENTE_CLIENTE` donde corresponda.
 | :--- | :------- | :------------- | :----- |
 | {{DATO}} | {{AUD_O_GUION}} | {{ITERACION}} | Pendiente |
 
-## 4. Decisiones por tomar
+## 5. Decisiones por tomar
 
 Decisiones del desarrollador que bloquean o condicionan trabajo. Mientras falten, se usa `PENDIENTE_DESARROLLADOR`.
 
@@ -40,17 +52,17 @@ Decisiones del desarrollador que bloquean o condicionan trabajo. Mientras falten
 | :--- | :------------- | :---------- |
 | {{TEMA}} | {{RDA_O_GUION}} | Desarrollador |
 
-## 5. Propuestas fuera de alcance
+## 6. Propuestas fuera de alcance
 
-Ideas detectadas durante el trabajo que no forman parte de lo comprometido. {{REGLA_DE_PROPUESTAS}} Si se aprueba una, pasa al backlog con una fila de historial.
+Ideas detectadas durante el trabajo que no forman parte de lo comprometido, incluidos los documentos nuevos que un agente crea necesarios (nunca se crean sin aprobación). {{REGLA_DE_PROPUESTAS}} Si se aprueba una, pasa al backlog con una fila de historial.
 
 | Propuesta | Origen | Fecha |
 | :-------- | :----- | :---- |
 | — | — | — |
 
-## 6. Historial
+## 7. Historial
 
-Una fila por cambio, en una sola línea, con enlace a la bitácora que tiene el detalle. Nada se borra: si un cambio queda sin efecto, se agrega una fila que lo dice.
+Una fila por cambio, en una sola línea, con enlace a la bitácora que tiene el detalle. Nada se borra: si un cambio queda sin efecto, se agrega una fila que lo dice. Cuando el historial pasa de 50 filas, las más antiguas se mueven a `registro-archivo.md`.
 
 | Fecha | Cambio |
 | :---- | :----- |

@@ -1,22 +1,20 @@
 # Auditoría técnica
 
-Registro acumulativo de auditorías. Las auditorías se agregan al final y nunca se borran. Antes de agregar una, revisa el último número usado en este archivo y suma uno. Un hallazgo se marca como resuelto indicando la iteración o la RDA que lo cerró (por ejemplo, `Resuelto en 02-01` o `Resuelto en RDA-004`).
+Índice de las auditorías del proyecto y estado de todos sus hallazgos. Cada auditoría completa vive en `auditorias/auditoria-NN.md` y no se edita después de entregada; **el estado de los hallazgos se actualiza solo aquí**.
 
-**Severidad:** Alta (bloquea la publicación o afecta al usuario o al negocio), Media (afecta calidad o rendimiento), Baja (mejora).
+- **Numeración:** antes de agregar una auditoría, revisa el último número de la tabla «Auditorías» y suma uno. Los hallazgos usan `AUD-NN-MMM` (auditoría y correlativo) y nunca se reutilizan.
+- **Cierre:** un hallazgo se marca `Resuelto en XX-YY` o `Resuelto en RDA-XXX`, con la evidencia mínima. `Riesgo aceptado` solo si el desarrollador lo aceptó y consta dónde.
+- **Severidad:** Alta (bloquea la publicación o afecta al usuario o al negocio), Media (afecta calidad o rendimiento), Baja (mejora).
 
 ---
 
-## Auditoría 01 · {{TITULO}}
+## Auditorías
 
-- **Fecha:** {{FECHA}}
-- **Auditor:** {{AUDITOR}}
-- **Alcance:** {{INSUMOS_AUDITADOS}}
+| N.º | Fecha | Título | Alcance | Archivo |
+| :-- | :---- | :----- | :------ | :------ |
+| 01 | {{FECHA}} | {{TITULO}} | {{ALCANCE}} | [auditoria-01](auditorias/auditoria-01.md) |
 
-### Resumen
-
-{{RESUMEN}}
-
-### Hallazgos
+## Hallazgos
 
 | ID | Severidad | Área | Hallazgo | Acción recomendada | Estado |
 | :- | :-------- | :--- | :------- | :----------------- | :----- |

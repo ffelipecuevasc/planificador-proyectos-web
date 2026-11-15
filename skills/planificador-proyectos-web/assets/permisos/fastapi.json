@@ -78,5 +78,19 @@
       "Bash(mysql *)",
       "Bash(mongosh *)"
     ]
+  },
+  "razones": {
+    "allow": {
+      "comandos": "Servidor local, pruebas, formato y generación o inspección de migraciones de Alembic.",
+      "edicion": "Código de la aplicación y pruebas.",
+      "web": "Documentación oficial de FastAPI, Pydantic y Python."
+    },
+    "ask": {
+      "comandos": "Instalar dependencias o aplicar y revertir migraciones cambia el entorno o la base de datos.",
+      "edicion": "Migraciones, configuración de Alembic y archivos de dependencias."
+    },
+    "deny": {
+      "comandos": "Consolas de base de datos y publicación de paquetes."
+    }
   }
 }

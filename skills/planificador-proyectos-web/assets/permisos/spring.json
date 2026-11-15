@@ -80,5 +80,19 @@
       "Bash(mysql *)",
       "Bash(sqlplus *)"
     ]
+  },
+  "razones": {
+    "allow": {
+      "comandos": "Ejecutar, compilar, probar y revisar dependencias con el wrapper del proyecto.",
+      "edicion": "Código fuente y pruebas.",
+      "web": "Documentación oficial de Spring y Java."
+    },
+    "ask": {
+      "comandos": "Maven o Gradle sin wrapper usan otra versión; aplicar migraciones cambia la base de datos.",
+      "edicion": "Archivos de construcción, `application*` y migraciones: una migración aplicada nunca se edita."
+    },
+    "deny": {
+      "comandos": "Desplegar, publicar versiones, limpiar la base de datos o abrir su consola."
+    }
   }
 }

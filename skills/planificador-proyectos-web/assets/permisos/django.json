@@ -103,5 +103,19 @@
       "Bash(uv run python manage.py sqlflush)",
       "Bash(uv run python manage.py sqlflush *)"
     ]
+  },
+  "razones": {
+    "allow": {
+      "comandos": "Servidor local, chequeos, pruebas, formato y creación o inspección de migraciones: no tocan datos.",
+      "edicion": "Código Python, plantillas, estáticos y pruebas son las carpetas de trabajo.",
+      "web": "Documentación oficial de Django y Python."
+    },
+    "ask": {
+      "comandos": "Instalar dependencias, aplicar migraciones, crear superusuarios o recolectar estáticos cambia el entorno o la base de datos: depende de a qué base apunta.",
+      "edicion": "Configuración, migraciones y archivos de dependencias: una migración aplicada nunca se edita y un error en la configuración rompe el arranque."
+    },
+    "deny": {
+      "comandos": "Vaciar la base (`flush`, `sqlflush`), abrir su consola o publicar paquetes no tiene caso de uso legítimo para un agente."
+    }
   }
 }
