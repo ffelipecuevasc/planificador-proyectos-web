@@ -26,16 +26,29 @@ activa las auditorías en nivel pequeño (por ejemplo, un proyecto con código e
 
 `--stack nombre:carpeta` sirve para un monorrepo: las reglas de edición del fragmento se
 aplican dentro de esa carpeta y se permite `cd carpeta`. El resultado conserva el orden de
-grupos (comandos, Git, sistema, edición, lectura, web), sin reglas repetidas, y avisa si una
-regla de allow o ask queda anulada por una de deny. Después hay que revisar el resultado
-contra el proyecto real: los fragmentos son un punto de partida.
+grupos (comandos, Git, sistema, edición, lectura, web), sin reglas repetidas. Después hay
+que revisar el resultado contra el proyecto real: los fragmentos son un punto de partida.
+
+Si una regla de allow o ask queda anulada por una de deny (también cuando son idénticas), el
+script se detiene sin escribir nada y muestra los conflictos.
+
+Un proyecto que ya tiene .claude/ nunca se sobrescribe en silencio. Hay que elegir un modo:
+    --simular     muestra las diferencias con lo que hay y no escribe nada.
+    --actualizar  fusiona settings.json: conserva las claves ajenas (env, otros hooks,
+                  additionalDirectories…), une las listas de permisos sin duplicados y agrega
+                  los hooks que falten. Muestra la diferencia antes de escribir. Si el
+                  settings.json actual no es JSON válido, se detiene sin tocar nada. Los demás
+                  archivos (README, hooks, comandos, lista) solo se escriben si no existen: si
+                  ya existen y difieren, se conservan y se informan.
+    --reemplazar  escribe todo de nuevo, como en un proyecto sin .claude/. Úsalo solo con la
+                  autorización explícita del desarrollador y después de un commit.
 """
 
 import argparse
+import difflib
 import fnmatch
 import json
 import re
-import shutil
 import sys
 from pathlib import Path
 
@@ -112,17 +125,23 @@ def con_carpeta(regla: str, carpeta: str) -> str:
 
 
 def conflictos(permisos: dict) -> list:
+    """Reglas de allow o ask que una de deny anula, incluida la regla idéntica.
+
+    El chequeo es aproximado: fnmatch no reproduce las reglas de permisos de Claude Code
+    (en fnmatch, * también cruza /, ** no tiene semántica propia y los corchetes son clases
+    de caracteres). Puede marcar de más, pero no deja pasar una regla idéntica.
+    """
     def partes(regla):
         m = re.match(r"^(\w+)\((.*)\)$", regla)
         return (m.group(1), m.group(2)) if m else (None, None)
 
     salida = []
     for lista in ("allow", "ask"):
-        for regla in permisos[lista]:
+        for regla in permisos.get(lista, []):
             h1, valor = partes(regla)
-            for negada in permisos["deny"]:
+            for negada in permisos.get("deny", []):
                 h2, patron = partes(negada)
-                if h1 and h1 == h2 and regla != negada and fnmatch.fnmatchcase(valor, patron):
+                if h1 and h1 == h2 and (regla == negada or fnmatch.fnmatchcase(valor, patron)):
                     salida.append(f"«{regla}» en {lista} queda anulada por «{negada}» en deny.")
     return salida
 
@@ -258,6 +277,35 @@ def tabla_documentos(texto_lista: str) -> str:
     return "\n".join(salida)
 
 
+def fusionar(actual: dict, generado: dict) -> dict:
+    """settings.json actual + el generado: conserva todo lo ajeno y agrega lo que falta."""
+    resultado = json.loads(json.dumps(actual))  # copia profunda
+    resultado.setdefault("$schema", generado["$schema"])
+    permisos = resultado.setdefault("permissions", {})
+    permisos.setdefault("defaultMode", generado["permissions"]["defaultMode"])
+    for lista in LISTAS:
+        existentes = permisos.setdefault(lista, [])
+        existentes.extend(r for r in generado["permissions"][lista] if r not in existentes)
+    hooks = resultado.setdefault("hooks", {})
+    for evento, entradas in generado["hooks"].items():
+        actuales = hooks.setdefault(evento, [])
+        registrados = {h.get("command") for e in actuales if isinstance(e, dict) for h in e.get("hooks", []) if isinstance(h, dict)}
+        for entrada in entradas:
+            if not all(h["command"] in registrados for h in entrada["hooks"]):
+                actuales.append(entrada)
+    return resultado
+
+
+def diferencia(ruta: str, antes: str, despues: str) -> str:
+    lineas = difflib.unified_diff(antes.splitlines(), despues.splitlines(),
+                                  fromfile=f"{ruta} (actual)", tofile=f"{ruta} (propuesto)", lineterm="")
+    return "\n".join(lineas)
+
+
+def leer_texto(ruta: Path) -> str:
+    return ruta.read_bytes().decode("utf-8", errors="replace").replace("\r\n", "\n")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--proyecto", type=Path, help="Raíz del proyecto donde se escribe .claude/")
@@ -268,6 +316,10 @@ def main():
     ap.add_argument("--linea-base-produccion", action="store_true", help="Agrega el documento de línea base de producción")
     ap.add_argument("--dominio-produccion", action="append", default=[], help="Dominio de producción que el agente no consulta")
     ap.add_argument("--listar", action="store_true", help="Muestra los fragmentos disponibles")
+    modo = ap.add_mutually_exclusive_group()
+    modo.add_argument("--simular", action="store_true", help="Muestra las diferencias con el .claude/ actual y no escribe nada")
+    modo.add_argument("--actualizar", action="store_true", help="Fusiona con el .claude/ actual sin borrar lo ajeno")
+    modo.add_argument("--reemplazar", action="store_true", help="Sobrescribe el .claude/ actual (requiere autorización explícita)")
     args = ap.parse_args()
 
     if args.listar:
@@ -286,30 +338,90 @@ def main():
         componentes.add("linea_base")
 
     destino = args.proyecto / ".claude"
-    (destino / "hooks").mkdir(parents=True, exist_ok=True)
-    (destino / "commands").mkdir(parents=True, exist_ok=True)
 
+    # 1. Todo se arma en memoria; nada se escribe hasta decidir el modo.
     texto_lista = lista_documentos(componentes)
-    (destino / "hooks" / "documentos-permitidos.md").write_text(texto_lista, encoding="utf-8")
+    archivos = {"hooks/documentos-permitidos.md": texto_lista}
     for hook in ("proteger-secretos.sh", "restringir-documentos.sh"):
-        datos = (PLANTILLA_CLAUDE / "hooks" / hook).read_bytes().replace(b"\r\n", b"\n")
-        (destino / "hooks" / hook).write_bytes(datos)
-        (destino / "hooks" / hook).chmod(0o755)
+        archivos[f"hooks/{hook}"] = leer_texto(PLANTILLA_CLAUDE / "hooks" / hook)
     for archivo, _, _, _, comp in COMANDOS:
         if comp is None or comp in componentes:
-            shutil.copyfile(PLANTILLA_CLAUDE / "commands" / archivo, destino / "commands" / archivo)
-
+            archivos[f"commands/{archivo}"] = leer_texto(PLANTILLA_CLAUDE / "commands" / archivo)
     grupos, filas = combinar(args.stack, args.api_rest, texto_lista, args.dominio_produccion)
-    texto = escribir_settings(grupos)
-    datos = json.loads(texto)  # comprueba que el resultado sea JSON válido
-    (destino / "settings.json").write_text(texto, encoding="utf-8")
-
+    texto_settings = escribir_settings(grupos)
+    generado = json.loads(texto_settings)  # comprueba que el resultado sea JSON válido
     readme = (PLANTILLA_CLAUDE / "README.md").read_text(encoding="utf-8")
-    readme = (readme.replace("{{TABLA_ALLOW}}", tabla_reglas(filas["allow"]))
-                    .replace("{{TABLA_ASK}}", tabla_reglas(filas["ask"]))
-                    .replace("{{TABLA_DENY}}", tabla_reglas(filas["deny"]))
-                    .replace("{{TABLA_COMANDOS}}", tabla_comandos(componentes)))
-    (destino / "README.md").write_text(readme, encoding="utf-8")
+    archivos["README.md"] = (readme.replace("{{TABLA_ALLOW}}", tabla_reglas(filas["allow"]))
+                                   .replace("{{TABLA_ASK}}", tabla_reglas(filas["ask"]))
+                                   .replace("{{TABLA_DENY}}", tabla_reglas(filas["deny"]))
+                                   .replace("{{TABLA_COMANDOS}}", tabla_comandos(componentes)))
+
+    # 2. ¿Hay un .claude/ con contenido? Entonces hay que elegir modo.
+    existentes = [r for r in [*archivos, "settings.json"] if (destino / r).exists()]
+    if existentes and not (args.simular or args.actualizar or args.reemplazar):
+        print(f"{destino} ya existe y tiene: {', '.join(sorted(existentes))}.", file=sys.stderr)
+        print("No se escribió nada. Elige un modo: --simular (ver diferencias), --actualizar (fusionar sin borrar lo ajeno) "
+              "o --reemplazar (sobrescribir, solo con autorización explícita).", file=sys.stderr)
+        sys.exit(1)
+
+    settings_final = generado
+    if (args.actualizar or args.simular) and (destino / "settings.json").exists():
+        try:
+            actual = json.loads(leer_texto(destino / "settings.json"))
+            if not isinstance(actual, dict):
+                raise ValueError("no es un objeto JSON")
+        except ValueError as e:
+            print(f"ERROR: el settings.json actual no es JSON válido ({e}). No se escribió nada: corrígelo a mano y vuelve a ejecutar.", file=sys.stderr)
+            sys.exit(1)
+        settings_final = fusionar(actual, generado)
+        texto_settings = json.dumps(settings_final, ensure_ascii=False, indent=2) + "\n"
+
+    # 3. Conflictos: con el resultado final (en --actualizar incluye tus reglas propias).
+    problemas = conflictos(settings_final.get("permissions", {}))
+    if problemas:
+        print("ERROR: reglas de allow o ask anuladas por deny. No se escribió nada:", file=sys.stderr)
+        for pr in problemas:
+            print(f"  - {pr}", file=sys.stderr)
+        if args.actualizar or args.simular:
+            print("Si alguna es una regla propia del proyecto, quítala o cámbiala en el settings.json actual y vuelve a "
+                  "ejecutar; o usa --reemplazar si el desarrollador lo autoriza.", file=sys.stderr)
+        if not args.simular:
+            sys.exit(1)
+    archivos["settings.json"] = texto_settings
+
+    # 4. Qué se escribe y qué se conserva.
+    escribir, conservados, iguales = {}, [], []
+    for rel, contenido in archivos.items():
+        ruta = destino / rel
+        if not ruta.exists() or args.reemplazar or (rel == "settings.json" and not args.simular):
+            if ruta.exists() and leer_texto(ruta) == contenido:
+                iguales.append(rel)
+            else:
+                escribir[rel] = contenido
+        elif leer_texto(ruta) == contenido:
+            iguales.append(rel)
+        else:
+            conservados.append(rel)
+
+    if args.simular or args.actualizar:
+        for rel in [*escribir, *conservados]:
+            ruta = destino / rel
+            if ruta.exists():
+                print(diferencia(f".claude/{rel}", leer_texto(ruta), archivos[rel]) or f"(sin cambios en .claude/{rel})")
+                print()
+    if args.simular:
+        if problemas:
+            print("Simulación: hay conflictos entre allow y deny (detalle arriba); --actualizar se detendría. No se escribió nada.")
+            sys.exit(1)
+        print(f"Simulación: se escribirían {len(escribir)} archivo(s) y se conservarían {len(conservados)}. No se escribió nada.")
+        return
+
+    for rel, contenido in escribir.items():
+        ruta = destino / rel
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+        ruta.write_bytes(contenido.encode("utf-8"))
+        if rel.endswith(".sh"):
+            ruta.chmod(0o755)
 
     agentes = args.proyecto / "AGENTS.md"
     tabla_en_agents = False
@@ -319,14 +431,15 @@ def main():
             agentes.write_text(contenido.replace("{{TABLA_DOCUMENTOS_PERMITIDOS}}", tabla_documentos(texto_lista)), encoding="utf-8")
             tabla_en_agents = True
 
-    total = sum(len(datos["permissions"][l]) for l in LISTAS)
-    print(f".claude/ preparada en {destino} ({total} reglas, 2 hooks, componentes: {', '.join(sorted(componentes)) or 'ninguno'}).")
+    total = sum(len(settings_final["permissions"].get(l, [])) for l in LISTAS)
+    accion = "actualizada" if args.actualizar else "preparada"
+    print(f".claude/ {accion} en {destino} ({total} reglas, {len(escribir)} archivo(s) escrito(s), componentes: {', '.join(sorted(componentes)) or 'ninguno'}).")
+    for rel in conservados:
+        print(f"CONSERVADO: .claude/{rel} ya existía y difiere de la versión de la skill; se dejó como estaba (la diferencia está arriba).")
     if tabla_en_agents:
         print("AGENTS.md: tabla de documentos permitidos insertada.")
     elif agentes.is_file():
         print("AVISO: AGENTS.md no tiene el marcador {{TABLA_DOCUMENTOS_PERMITIDOS}}; revisa que su tabla coincida con la lista.")
-    for p in conflictos(datos["permissions"]):
-        print(f"AVISO: {p}")
 
 
 if __name__ == "__main__":

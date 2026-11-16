@@ -1,6 +1,6 @@
 ---
 name: planificador-proyectos-web
-description: "Planifica y documenta proyectos web (frontend, backend o API, fullstack) en el idioma que elijas (por defecto, español), con un proceso proporcional a su complejidad: diagnostica si el proyecto es pequeño, mediano o complejo y activa solo lo que aporta (AGENTS.md, DESIGN.md, README.md, .claude/ con permisos, hooks y comandos, y en _planificacion/ el registro con backlog, decisiones, especificaciones, épicas con sus iteraciones y bitácoras y auditorías; OpenAPI si expone una API REST). Úsala siempre que el desarrollador quiera planificar, documentar o arrancar un proyecto web (nuevo o con código ya escrito), elegir el stack, planificar la siguiente épica, especificar una funcionalidad nueva, gestionar un cambio o una corrección con trazabilidad, rediagnosticar la complejidad, preparar las reglas para agentes de IA (Claude Code, Antigravity, Codex), migrar un proyecto documentado con la estructura anterior o revisar y optimizar un DESIGN.md o README.md existente, aunque no nombre la skill ni los archivos."
+description: "Planifica y documenta proyectos web (frontend, backend o API, fullstack) en español (con la variante regional que elijas), con un proceso proporcional a su complejidad: diagnostica si el proyecto es pequeño, mediano o complejo y activa solo lo que aporta (AGENTS.md, DESIGN.md, README.md, .claude/ con permisos, hooks y comandos, y en _planificacion/ el registro con backlog, decisiones, especificaciones, épicas con sus iteraciones y bitácoras y auditorías; OpenAPI si expone una API REST). Úsala siempre que el desarrollador quiera planificar, documentar o arrancar un proyecto web (nuevo o con código ya escrito), elegir el stack, planificar la siguiente épica, especificar una funcionalidad nueva, gestionar un cambio o una corrección con trazabilidad, rediagnosticar la complejidad, preparar las reglas para agentes de IA (Claude Code, Antigravity, Codex), migrar un proyecto documentado con la estructura anterior o revisar y optimizar un DESIGN.md o README.md existente, aunque no nombre la skill ni los archivos."
 ---
 
 # Planificador de proyectos web
@@ -15,11 +15,13 @@ Funciona en dos lugares:
 - **En el chat:** entrevistas al desarrollador, generas los archivos y los entregas en un `.zip` listo para descomprimir en la raíz del repositorio.
 - **En Claude Code:** escribes los archivos directamente en el repositorio y, más adelante, ayudas a evolucionarlos (funcionalidades nuevas, cambios, correcciones).
 
+**Requisito: Python 3.** Los dos scripts (`preparar_claude.py` y `validar_documentacion.py`) lo necesitan, sin librerías externas. En el chat siempre está. En Claude Code, compruébalo antes de generar (`python3 --version`; en Windows, `python` o `py`). Si no está, ofrece dos caminos: que el desarrollador instale Python 3, o que haga la planificación en el chat de Claude y descomprima el `.zip`. Si ninguno es posible, arma `.claude/` a partir de `assets/permisos/base.json`, el fragmento del stack y las plantillas de `assets/plantillas/claude/`, y dilo en la entrega: «`.claude/` armada sin el script y documentación sin validar». No declares una validación que no ocurrió.
+
 El modelo viene de proyectos reales de su autor. Varias reglas de abajo existen porque en esos proyectos algo salió mal (documentos que parecían borradores, IDs de auditoría duplicados, historiales de 15 líneas por fila, bitácoras sin nombre claro, archivos de prompts en la carpeta de bitácoras, registros de más de 100 KB). Cuando una regla parezca rígida, la razón está a su lado: úsala para decidir en los casos que la regla no cubre.
 
 ## Reglas que no se negocian
 
-1. **Un solo idioma y una sola variante regional en todo**, los que acuerdes con el desarrollador en la entrevista. Por defecto, español latinoamericano neutro con trato de **tú**; si pide otra variante (español de Chile, de México o de Argentina, portugués, inglés), esa decide la ortografía, el vocabulario y el formato de números, monedas, teléfonos y fechas. Tus explicaciones en el chat van en el mismo idioma.
+1. **Español en todo, con una sola variante regional**: la que acuerdes con el desarrollador en la entrevista. Por defecto, español latinoamericano neutro con trato de **tú**; si pide otra variante (de Chile, de México, de Argentina, de España), esa decide la ortografía, el vocabulario y el formato de números, monedas, teléfonos y fechas. La skill es para equipos hispanohablantes: la documentación, los archivos de `.claude/` y tus explicaciones en el chat van siempre en español, y el validador busca los títulos y estados de las plantillas en español. Si la interfaz del producto va en otro idioma, es un dato del producto (va en `producto.md` y `DESIGN.md`), no cambia el idioma de la documentación.
 2. **Todo en Markdown**, salvo que el desarrollador pida otro formato al inicio. Las únicas excepciones son `.claude/settings.json`, que Claude Code exige en JSON, y el contrato `docs/api/openapi.yaml` de las APIs REST, que sigue el formato OpenAPI.
 3. **Nombres de archivo y carpeta en ASCII**: minúsculas, guiones, sin tildes ni ñ (`epica-02-sistema-diseno/`, `bitacora-01-01.md`). Los caracteres no ASCII dan problemas en Git entre Windows y Linux, en URLs de GitHub y en terminales. El *contenido* sí lleva tildes y ñ.
 4. **No inventes datos.** Lo que no confirmó el desarrollador o el cliente va con un marcador explícito: `PENDIENTE_CLIENTE` (datos del negocio) o `PENDIENTE_DESARROLLADOR` (decisiones técnicas o de diseño), y se registra en `registro-pendientes.md`. Un dato de relleno que parece real termina publicado. Lo mismo vale para resultados: no declares una verificación, una prueba o un estado de implementación que no ocurrió.
@@ -55,7 +57,7 @@ Lee `references/tipos-proyecto.md` y aplica la variante que corresponde:
 - **Backend o API sin interfaz**: sin `DESIGN.md`; las convenciones generales de la API van en una sección propia de `AGENTS.md` y, si expone una API REST, el contrato vive en `docs/api/openapi.yaml` según el nivel.
 - **Fullstack**: `DESIGN.md` cubre la interfaz; las convenciones de la API van en `AGENTS.md` y el contrato en `docs/api/openapi.yaml`.
 
-Aplica también la ficha del stack acordado (`references/stacks.md`, sección 4): comandos, reglas técnicas, estándares del experto y definición de terminado. La carpeta `.claude/` completa (permisos, hooks, comandos, lista de documentos permitidos y su README) se prepara con el script, nunca a mano:
+Aplica también la ficha del stack acordado (`references/stacks.md`, sección 4): comandos, reglas técnicas, estándares del experto y definición de terminado. La carpeta `.claude/` completa (permisos, hooks, comandos, lista de documentos permitidos y su README) se prepara con el script, no a mano (sin Python, ver «Requisito: Python 3»):
 
 ```bash
 python scripts/preparar_claude.py --proyecto <dir> --stack <fragmento>[:carpeta] [--stack ...] \
@@ -63,6 +65,8 @@ python scripts/preparar_claude.py --proyecto <dir> --stack <fragmento>[:carpeta]
 ```
 
 Fragmentos: `astro-pnpm`, `django`, `fastapi`, `spring`, `quarkus`, `express-pnpm` (`--listar` los muestra). En un monorrepo fullstack, cada fragmento va con su carpeta (`--stack astro-pnpm:frontend --stack django:backend`). Ejecútalo después de escribir `AGENTS.md`: reemplaza su marcador `{{TABLA_DOCUMENTOS_PERMITIDOS}}`. Después revisa el resultado contra el proyecto real.
+
+Si el proyecto ya tiene `.claude/`, el script no escribe nada hasta que elijas un modo. Primero `--simular`, que muestra las diferencias sin tocar nada, y muéstraselas al desarrollador. Después `--actualizar`, que conserva su configuración (permisos propios, otros hooks, `env`) y agrega lo que falta. `--reemplazar` sobrescribe todo: úsalo solo con su autorización explícita. Si el script se detiene por un conflicto entre `allow` y `deny` o por un `settings.json` inválido, no lo esquives escribiendo el archivo a mano: explícale el problema al desarrollador.
 
 ### 4. Generar
 
@@ -115,7 +119,15 @@ Escribe especificaciones (`20_especificaciones/`) solo para las funcionalidades 
 
 Las bitácoras no se generan al inicio: las escribe el agente al terminar cada iteración, en la carpeta `bitacoras/` de su épica. La de la primera épica va con un `.gitkeep` para que Git la versione.
 
-Si el desarrollador trae un `DESIGN.md` o `README.md` existente, no lo copies: optimízalo. Consolida lo vigente, quita los rastros de tiempo (ver abajo) y, en el chat, lista qué quitaste o moviste y a qué documento vivo fue a parar.
+**Documentos que ya existen.** Un repositorio con código suele traer su `README.md`, y a veces `DESIGN.md`, `AGENTS.md` o `.claude/`. Ninguno se sobrescribe sin permiso:
+
+| Caso | Qué haces |
+| :--- | :-------- |
+| El documento no existe | Lo escribes. |
+| El documento existe | Escribes la versión nueva (optimizada, ver abajo) como **propuesta**, sin tocar el original. En Claude Code, la dejas en el directorio de trabajo y muestras la diferencia con el actual; en el chat, va en el `.zip` y avisas que reemplaza uno existente y qué cambia. `.claude/` sigue la misma regla con `--simular` y `--actualizar`. |
+| Reemplazo | Solo con autorización explícita del desarrollador, documento por documento. |
+
+Optimizar un `DESIGN.md` o `README.md` existente no es copiarlo: consolida lo vigente, quita los rastros de tiempo (ver abajo) y, en el chat, lista qué quitaste o moviste y a qué documento vivo fue a parar.
 
 **Optimizar no es completar.** Al reordenar un documento existente contra la estructura de la plantilla, aparecen secciones vacías (concepto, escala tipográfica, espaciado, íconos, hover, movimiento) y la tentación es rellenarlas con valores razonables. No lo hagas: un valor razonable inventado se lee igual que uno decidido, y un agente lo va a implementar como verdad. Lo que el documento original no decía se deja con `PENDIENTE_DESARROLLADOR`, se registra en «Decisiones por tomar» de `registro-pendientes.md` y, si tienes una sugerencia, la das en el chat. Lo mismo vale para corregir: si un valor existente rompe una regla (por ejemplo, un color de texto que falla el contraste AA), escribe en el documento la restricción que evita el problema («solo indicadores, nunca texto»), registra el cambio como decisión pendiente del desarrollador y explícalo en el chat; no reemplaces el valor por uno que él no eligió.
 
@@ -134,7 +146,13 @@ Los **avisos** (rastros de tiempo en los documentos inmutables, criterios vagos,
 ### 6. Entregar
 
 - **En el chat:** empaqueta con el mismo script (`--zip <ruta-del-zip>`) y entrega el `.zip` con la herramienta de archivos que tengas.
-- **En Claude Code:** genera en un directorio de trabajo, valida y recién entonces copia al repositorio. Copia `.claude/` al final: una vez en su lugar, sus permisos y hooks bloquean la edición de los documentos protegidos y la creación de documentos fuera de la lista, también para ti. No hagas commits.
+- **En Claude Code:** genera en un directorio de trabajo, valida y recién entonces copia al repositorio lo que no existía; lo que ya existía sigue la tabla de «Documentos que ya existen». `.claude/` va al final. No hagas commits.
+
+Desde ese momento valen tres capas distintas. No prometas más de lo que cada una da:
+
+1. **La regla de trabajo** (`AGENTS.md`): ningún agente edita los documentos protegidos ni crea documentos fuera de la lista. Te obliga a ti también, aunque nada te lo impida.
+2. **Los permisos y hooks** (`.claude/`): bloquean esas acciones cuando pasan por las herramientas de archivos de Claude Code o por comandos cuyo texto el hook alcanza a revisar. No ven lo que hace por dentro un programa en ejecución, como un script de Python o de Node que escribe un archivo. Sus límites están en `.claude/README.md`, sección 8.
+3. **El aislamiento del sistema operativo** (el sandbox de Claude Code): es lo único que limita a esos programas. Es un requisito aparte que decide el desarrollador. Menciónalo si el proyecto lo justifica, pero no lo actives ni lo agregues a `settings.json` por tu cuenta.
 
 En ambos casos, en el chat, después de entregar:
 
@@ -154,7 +172,7 @@ Cuando el repositorio ya tiene `AGENTS.md` y `_planificacion/`, no regeneres nad
 - **Migración:** si el proyecto tiene la estructura anterior (bitácoras en `99_bitacora/`, archivos de evidencia, sin hooks ni lista de documentos), propón una vez migrarlo y, si el desarrollador acepta, sigue `references/guia-documentos.md`, sección 22.
 - **Rediagnóstico:** si el proyecto ganó factores de complejidad (autenticación, una integración nueva, datos personales, más consumidores de la API) o los perdió, propón el nivel nuevo con sus razones. Si el desarrollador lo acepta, registra una RDA que reemplaza a la anterior y entrega la propuesta de cambios a los documentos inmutables para que él la aplique.
 
-Los documentos protegidos tampoco se editan en este modo, aunque los hayas generado tú: registra la propuesta en `propuestas-documentos-protegidos.md` (archivo, sección, texto actual copiado literalmente, texto propuesto y por qué). En Claude Code, además, `.claude/settings.json` lo impide.
+Los documentos protegidos tampoco se editan en este modo, aunque los hayas generado tú: registra la propuesta en `propuestas-documentos-protegidos.md` (archivo, sección, texto actual copiado literalmente, texto propuesto y por qué). En Claude Code, además, los permisos y hooks de `.claude/` bloquean la edición directa con las herramientas de archivos, con los límites descritos en «Entregar».
 
 ## Documentos inmutables
 

@@ -143,6 +143,6 @@ python scripts/preparar_claude.py --proyecto <dir> --stack astro-pnpm:frontend -
     --api-rest --nivel complejo --linea-base-produccion --dominio-produccion app.ejemplo.cl
 ```
 
-Si `AGENTS.md` ya está escrito con el marcador `{{TABLA_DOCUMENTOS_PERMITIDOS}}`, el script lo reemplaza por la tabla. Usa `--auditoria` en un proyecto pequeño que igual tiene auditorías (por ejemplo, uno con código existente).
+Si `AGENTS.md` ya está escrito con el marcador `{{TABLA_DOCUMENTOS_PERMITIDOS}}`, el script lo reemplaza por la tabla. Si el proyecto ya tiene `.claude/`, agrega `--simular` para ver las diferencias y después `--actualizar` para fusionar sin borrar lo propio del proyecto; `--reemplazar` solo con autorización explícita. El script se detiene sin escribir nada si una regla de `allow` o `ask` queda anulada por `deny` o si el `settings.json` actual no es JSON válido. Usa `--auditoria` en un proyecto pequeño que igual tiene auditorías (por ejemplo, uno con código existente).
 
 Después, revisa el resultado contra el proyecto real: carpetas de código que el fragmento no conoce, scripts que el proyecto no tiene, archivos de configuración propios, carpetas de contenido en `.md` fuera de las zonas de documentación. Los criterios de qué va en `allow`, `ask` y `deny` están en `tipos-proyecto.md`, «Cómo adaptar `settings.json` al stack». Si cambias una regla a mano, actualiza también su fila en `.claude/README.md`.

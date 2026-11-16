@@ -280,7 +280,7 @@ El segundo se puede comprobar con un sí o un no. El primero no, y el validador 
 8. Cuando termine la última etapa de una épica, el agente escribirá la bitácora de cierre y te propondrá las etapas de la épica siguiente, revisadas como experto en tu stack. Revisa la lista, ajústala si quieres y apruébala: el agente las crea todas. También puedes pedirlo cuando quieras con «Planifica la siguiente épica» o `/siguiente-epica`.
 9. La primera vez, comprueba que los hooks funcionan en tu equipo con la «Prueba rápida» de `.claude/README.md`.
 
-> ◆ **El agente nunca hace commits, push, merges ni despliegues.** Los permisos de `.claude/settings.json` se lo impiden (también desde PowerShell), y `AGENTS.md` le explica por qué. Esos pasos siempre quedan en tus manos.
+> ◆ **El agente nunca hace commits, push, merges ni despliegues.** Los permisos de `.claude/settings.json` bloquean esos comandos (también desde PowerShell) y `AGENTS.md` le explica por qué. Los límites de esa protección están en `.claude/README.md`. Esos pasos siempre quedan en tus manos.
 
 ---
 
@@ -313,7 +313,7 @@ El validador entrega dos tipos de resultados:
 
 ## 11. Personalizar la skill
 
-Durante la entrevista puedes cambiar las convenciones de cada proyecto: idioma y variante regional (por defecto, español latinoamericano neutro, con trato de tú), formato de los mensajes de commit, nombres de ramas, zona horaria y gestor de paquetes.
+Durante la entrevista puedes cambiar las convenciones de cada proyecto: variante regional del español (por defecto, español latinoamericano neutro, con trato de tú; la documentación y `.claude/` van siempre en español), formato de los mensajes de commit, nombres de ramas, zona horaria y gestor de paquetes.
 
 Si quieres que tus propias convenciones se usen siempre, edita la sección «Convenciones por defecto» de `SKILL.md`. Las plantillas de `assets/plantillas/` también puedes ajustarlas.
 
@@ -321,7 +321,7 @@ Si quieres que tus propias convenciones se usen siempre, edita la sección «Con
 
 **Estándares de calidad.** Lo que el agente revisa como desarrollador senior de cada stack está en las fichas de `references/stacks.md` («Estándares del experto»). Puedes ajustarlos a tu forma de trabajar.
 
-**La carpeta `.claude/`** se arma con `scripts/preparar_claude.py`: permisos a partir de fragmentos por stack (`assets/permisos/`: `astro-pnpm`, `django`, `fastapi`, `spring`, `quarkus` y `express-pnpm`), hooks, comandos, lista de documentos permitidos y un README con la razón de cada regla, que sale del campo `razones` de cada fragmento. Si usas otro stack, copia el fragmento más parecido y cambia sus comandos y razones. Si tus proyectos tienen archivos de secretos con otro nombre, agrégalos a `es_secreto()` en `assets/plantillas/claude/hooks/proteger-secretos.sh`.
+**La carpeta `.claude/`** se arma con `scripts/preparar_claude.py`: permisos a partir de fragmentos por stack (`assets/permisos/`: `astro-pnpm`, `django`, `fastapi`, `spring`, `quarkus` y `express-pnpm`), hooks, comandos, lista de documentos permitidos y un README con la razón de cada regla, que sale del campo `razones` de cada fragmento. Si el proyecto ya tiene `.claude/`, el script no escribe nada hasta que elijas un modo: `--simular` muestra las diferencias, `--actualizar` conserva tu configuración y agrega lo que falta, y `--reemplazar` sobrescribe todo. Si usas otro stack, copia el fragmento más parecido y cambia sus comandos y razones. Si tus proyectos tienen archivos de secretos con otro nombre, agrégalos a `es_secreto()` en `assets/plantillas/claude/hooks/proteger-secretos.sh`.
 
 ---
 

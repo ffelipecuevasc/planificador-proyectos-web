@@ -21,6 +21,9 @@ Advertencias: posibles rastros de tiempo en los documentos inmutables, criterios
 iteraciones con más de 8 tareas, una épica 00 mal formada, épicas sin carpeta bitacoras/,
 secciones clave de AGENTS.md ausentes y marcadores PENDIENTE_ que conviene revisar. El zip
 solo se genera si no hay errores.
+
+La documentación va siempre en español (en cualquier variante regional): los títulos de
+sección y los estados que se buscan son los de las plantillas.
 """
 
 import argparse
@@ -141,7 +144,11 @@ def revisar_registro(raiz: Path, pendientes: dict, errores: list, avisos: list):
 
 
 def conflictos_de_permisos(permisos: dict) -> list:
-    """Reglas de allow o ask que nunca se aplican porque una de deny las cubre."""
+    """Reglas de allow o ask que nunca se aplican porque una de deny las cubre o es idéntica.
+
+    Aproximado: fnmatch no reproduce las reglas de Claude Code (* cruza /, ** no tiene
+    semántica propia, los corchetes son clases de caracteres). Puede marcar de más.
+    """
     def partes(regla):
         m = re.match(r"^(\w+)\((.*)\)$", regla)
         return (m.group(1), m.group(2)) if m else (None, None)
@@ -152,7 +159,7 @@ def conflictos_de_permisos(permisos: dict) -> list:
             herramienta, valor = partes(regla)
             for negada in permisos.get("deny", []):
                 h2, patron = partes(negada)
-                if herramienta and herramienta == h2 and regla != negada and fnmatch.fnmatchcase(valor, patron):
+                if herramienta and herramienta == h2 and (regla == negada or fnmatch.fnmatchcase(valor, patron)):
                     conflictos.append(f"settings.json: «{regla}» en {lista} queda anulada por «{negada}» en deny.")
     return conflictos
 
